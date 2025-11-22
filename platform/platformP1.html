@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系統平臺大冒險 | CL IT Classroom </title>
+    <title>系統平臺大冒險 | Mushroom Systems</title>
     
     <!-- 新增網站小圖示 -->
     <link rel="icon" type="image/png" href="img/siteicon.png">
@@ -20,9 +20,69 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f4f1ea; /* 蘑菇風米色背景 */
             color: #2c3e50;
-            /* 修正: 調淡網點顏色 (#e8e4dc 代替 #d0ccc3)，保持密度 */
+            /* 背景網點顏色調淡 (#e8e4dc) */
             background-image: radial-gradient(#e8e4dc 2px, transparent 2px);
             background-size: 15px 15px;
+            cursor: none; /* 隱藏預設游標 */
+        }
+
+        /* --- 自定義科技感滑鼠游標 --- */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #2c3e50;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(44, 62, 80, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* 懸停在可點擊元素上的狀態 */
+        body.hovering .cursor-outline {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(44, 62, 80, 0.1);
+            border-color: transparent;
+        }
+        
+        /* 點擊瞬間的狀態 */
+        body.clicking .cursor-outline {
+            width: 30px;
+            height: 30px;
+            border-color: #d35400;
+            background-color: rgba(211, 84, 0, 0.1);
+        }
+
+        /* 點擊波紋特效 */
+        .click-ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(211, 84, 0, 0.3);
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
 
         /* Retro/Pixel Art Style Utilities */
@@ -38,12 +98,32 @@
             background-color: white;
             border: 4px solid #2c3e50;
             box-shadow: 6px 6px 0px #2c3e50;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更平滑的過渡 */
+            position: relative;
+            overflow: hidden; /* 為了波紋特效 */
+        }
+
+        .retro-card::after { /* 光影掃過特效 */
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            transition: none;
+        }
+
+        .retro-card:hover::after {
+            left: 200%;
+            transition: left 0.6s ease-in-out;
         }
 
         .retro-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 10px 10px 0px #2c3e50;
+            transform: translate(-3px, -3px) scale(1.01);
+            box-shadow: 12px 12px 0px #2c3e50;
+            border-color: #34495e;
         }
 
         .retro-card:active {
@@ -57,6 +137,8 @@
             transition: all 0.1s;
             box-shadow: 4px 4px 0px #2c3e50;
             text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
         }
 
         .retro-btn:hover {
@@ -120,6 +202,10 @@
     </style>
 </head>
 <body>
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-outline" data-cursor-outline></div>
+    
     <div id="root"></div>
 
     <script type="module">
@@ -128,8 +214,74 @@
         import { 
             Book, Cpu, Monitor, Coffee, ArrowRight, Star, CheckCircle, XCircle, 
             RefreshCw, Brain, Server, HardDrive, Keyboard, Smartphone, Cloud,
-            Zap, LayoutGrid, Trophy, Heart, User, Play
+            Zap, LayoutGrid, Trophy, Heart, User, Play, Github
         } from 'https://esm.sh/lucide-react@0.263.1';
+
+        // --- Mouse Effect Logic (Tech Circle Style) ---
+        const useMouseEffect = () => {
+            useEffect(() => {
+                const cursorDot = document.querySelector('[data-cursor-dot]');
+                const cursorOutline = document.querySelector('[data-cursor-outline]');
+                
+                const moveCursor = (e) => {
+                    const posX = e.clientX;
+                    const posY = e.clientY;
+
+                    // Dot follows instantly
+                    cursorDot.style.left = `${posX}px`;
+                    cursorDot.style.top = `${posY}px`;
+
+                    // Outline follows with delay (using simple animation here for smoothness)
+                    cursorOutline.animate({
+                        left: `${posX}px`,
+                        top: `${posY}px`
+                    }, { duration: 500, fill: "forwards" });
+                };
+
+                const handleMouseDown = () => document.body.classList.add('clicking');
+                const handleMouseUp = () => document.body.classList.remove('clicking');
+
+                // Hover effect for clickable elements
+                const handleMouseOver = (e) => {
+                    if (e.target.matches('button, a, .retro-card, .cursor-pointer')) {
+                        document.body.classList.add('hovering');
+                    }
+                };
+                const handleMouseOut = (e) => {
+                    if (e.target.matches('button, a, .retro-card, .cursor-pointer')) {
+                        document.body.classList.remove('hovering');
+                    }
+                };
+
+                const createRipple = (e) => {
+                    const ripple = document.createElement('div');
+                    ripple.classList.add('click-ripple');
+                    const size = 100; 
+                    ripple.style.width = size + 'px';
+                    ripple.style.height = size + 'px';
+                    ripple.style.left = (e.clientX - size / 2) + 'px';
+                    ripple.style.top = (e.clientY - size / 2) + 'px';
+                    document.body.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                };
+
+                window.addEventListener('mousemove', moveCursor);
+                window.addEventListener('mousedown', handleMouseDown);
+                window.addEventListener('mouseup', handleMouseUp);
+                window.addEventListener('mouseover', handleMouseOver); // Event delegation for hover
+                window.addEventListener('mouseout', handleMouseOut);
+                window.addEventListener('click', createRipple);
+
+                return () => {
+                    window.removeEventListener('mousemove', moveCursor);
+                    window.removeEventListener('mousedown', handleMouseDown);
+                    window.removeEventListener('mouseup', handleMouseUp);
+                    window.removeEventListener('mouseover', handleMouseOver);
+                    window.removeEventListener('mouseout', handleMouseOut);
+                    window.removeEventListener('click', createRipple);
+                };
+            }, []);
+        };
 
         // --- Sound Helper (Web Audio API) ---
         const playSound = (type) => {
@@ -349,7 +501,7 @@
                                 React.createElement("div", { 
                                     key: type.id, 
                                     onClick: () => setSelectedType(type),
-                                    className: `cursor-pointer p-5 border-4 border-[#2c3e50] shadow-[4px_4px_0px_#2c3e50] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_#2c3e50] transition-all flex items-start gap-4 bg-white relative overflow-hidden`
+                                    className: `cursor-pointer p-5 border-4 border-[#2c3e50] shadow-[4px_4px_0px_#2c3e50] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_#2c3e50] transition-all flex items-start gap-4 bg-white relative overflow-hidden retro-card`
                                 },
                                     // Category Label
                                     React.createElement("div", { className: `absolute top-0 right-0 ${type.categoryColor} text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10` },
@@ -721,13 +873,13 @@
                             },
                                 React.createElement("div", { className: `relative w-full h-full transition-transform duration-500 transform-style-3d ${flipped[idx] ? 'rotate-y-180' : ''}` },
                                     // Front
-                                    React.createElement("div", { className: "absolute w-full h-full bg-white border-4 border-[#2c3e50] shadow-[4px_4px_0px_#9b59b6] p-6 flex flex-col items-center justify-center text-center backface-hidden" },
+                                    React.createElement("div", { className: "absolute w-full h-full bg-white border-4 border-[#2c3e50] shadow-[4px_4px_0px_#9b59b6] p-6 flex flex-col items-center justify-center text-center backface-hidden retro-card" },
                                         React.createElement(Brain, { size: 32, className: "text-[#9b59b6] mb-2" }),
                                         React.createElement("h3", { className: "text-xl font-black text-[#2c3e50]" }, card.q),
                                         React.createElement("span", { className: "absolute bottom-2 text-xs font-bold text-gray-400" }, "點擊翻面")
                                     ),
                                     // Back
-                                    React.createElement("div", { className: "absolute w-full h-full bg-[#f39c12] border-4 border-[#2c3e50] shadow-[4px_4px_0px_#2c3e50] p-6 flex flex-col items-center justify-center text-center rotate-y-180 backface-hidden" },
+                                    React.createElement("div", { className: "absolute w-full h-full bg-[#f39c12] border-4 border-[#2c3e50] shadow-[4px_4px_0px_#2c3e50] p-6 flex flex-col items-center justify-center text-center rotate-y-180 backface-hidden retro-card" },
                                         React.createElement(CheckCircle, { size: 32, className: "text-white mb-2" }),
                                         React.createElement("h3", { className: "text-2xl font-black text-white" }, card.a)
                                     )
@@ -864,7 +1016,7 @@
                                     placeholder: "輸入大廚姓名",
                                     value: playerName,
                                     onChange: (e) => setPlayerName(e.target.value),
-                                    className: "bg-black border-2 border-[#00ff46] text-white text-2xl p-4 text-center focus:outline-none focus:shadow-[0_0_15px_#00ff46] font-mono w-full max-w-xs uppercase"
+                                    className: "bg-black border-2 border-[#00ff46] text-white text-2xl p-4 text-center focus:outline-none focus:shadow-[0_0_15px_#00ff46] font-mono w-full max-w-xs uppercase cursor-none" // hide cursor on input too if needed
                                 }),
                                 React.createElement("button", {
                                     onClick: () => { if(playerName.trim()) setGameState('start'); },
@@ -989,6 +1141,9 @@
         // Main App
         const App = () => {
             const [activeTab, setActiveTab] = useState('intro');
+            
+            // Enable custom cursor effect
+            useMouseEffect();
 
             return (
                 React.createElement("div", { className: "min-h-screen font-sans text-[#2c3e50]" },
@@ -1004,7 +1159,17 @@
 
                     React.createElement("footer", { className: "mt-auto text-center text-gray-500 text-sm p-8 border-t-4 border-[#ccc]" },
                         React.createElement("p", null, "© 2025 CL IT Classroom | 國中資訊科技"),
-                        React.createElement("p", { className: "mt-2" }, "Style: Retro Pixel / Content: System Platform")
+                        React.createElement("p", { className: "mt-2" }, "Style: Retro Pixel / Content: System Platform"),
+                        // GitHub Link in Footer
+                        React.createElement("a", { 
+                            href: "https://github.com/mushroomonthehill", 
+                            target: "_blank", 
+                            rel: "noopener noreferrer",
+                            className: "inline-flex items-center gap-2 mt-4 text-gray-600 hover:text-[#2c3e50] transition-colors"
+                        },
+                            React.createElement(Github, { size: 20 }),
+                            React.createElement("span", null, "GitHub")
+                        )
                     )
                 )
             );
@@ -1015,4 +1180,3 @@
     </script>
 </body>
 </html>
-
