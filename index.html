@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carey's IT Classroom - 國中資訊教育課程學習網頁</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons (Clean, tech-friendly icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+                    },
+                    colors: {
+                        morandi: {
+                            bg: '#F2F4F6', // 淺灰背景
+                            blue: '#7A8FA3',
+                            green: '#8DA399',
+                            rose: '#C4A4A4',
+                            yellow: '#D4C4A0',
+                            purple: '#A89FB1',
+                            grey: '#9FA6AA',
+                            dark: '#4A5568',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Icon Container Gradient Effects */
+        .icon-glow {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .icon-glow::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0.8), rgba(255,255,255,0) 60%);
+            transform: rotate(45deg);
+            pointer-events: none;
+        }
+
+        /* Custom Cursor */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4A5568;
+        }
+        
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(74, 85, 104, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        body:hover .cursor-outline {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(2px);
+        }
+
+        /* Hide default cursor on non-touch devices */
+        @media (hover: hover) and (pointer: fine) {
+            body {
+                cursor: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-morandi-bg min-h-screen text-morandi-dark relative overflow-x-hidden selection:bg-morandi-blue selection:text-white">
+
+    <!-- Dynamic Background blobs -->
+    <div class="fixed inset-0 -z-10 overflow-hidden">
+        <div class="absolute top-0 left-0 w-96 h-96 bg-morandi-blue/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-morandi-rose/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-20 w-96 h-96 bg-morandi-green/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300 p-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass rounded-2xl px-6 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-morandi-blue to-morandi-grey flex items-center justify-center text-white shadow-lg">
+                        <i class="ph ph-desktop text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-wide text-gray-800">Carey's IT Classroom</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="https://ttjhs.ntct.edu.tw/index.php" target="_blank" class="text-sm font-medium hover:text-morandi-blue transition-colors hidden sm:block">回草屯國中</a>
+                    <div class="text-xs px-3 py-1 rounded-full bg-gray-200/50 border border-gray-200/50 backdrop-blur-sm">
+                        <span id="current-time">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        
+        <!-- Hero Section -->
+        <div class="text-center mb-16 relative">
+            <span class="inline-block py-1 px-3 rounded-full bg-white/40 border border-white/50 text-sm mb-4 backdrop-blur-md text-gray-600">
+                歡迎來到資訊科技的世界
+            </span>
+            <h2 class="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-700 via-gray-800 to-gray-600 drop-shadow-sm">
+                探索、學習、創造
+            </h2>
+            <p class="text-xl text-gray-500 font-light tracking-wide">
+                國中資訊教育課程學習網頁
+            </p>
+        </div>
+
+        <!-- Grid Layout -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            
+            <!-- Card 1: IT Basics -->
+            <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%B3%87%E8%A8%8A%E7%A7%91%E6%8A%80%E7%9B%B8%E9%97%9C" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-blue to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-cpu text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">資訊基礎</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">IT Basics</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        認識電腦硬體、鍵盤指法練習、資訊安全與網路素養，建立扎實的數位觀念。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">打字練習</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">硬體</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: Programming -->
+            <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E7%A8%8B%E5%BC%8F%E8%A8%AD%E8%A8%88" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-green to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-code text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">程式設計</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">Coding & Logic</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        學習 Python、Scratch 積木程式與 AI 人工智慧原理，培養運算思維與邏輯。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Python</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Scratch</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3: Multimedia Design -->
+            <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E5%B9%B3%E9%9D%A2%E8%A8%AD%E8%A8%88%E7%9B%B8%E9%97%9C" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-rose to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-paint-brush text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">多媒體設計</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">Design & Art</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        使用 PhotoCap、Canva 進行影像創作，學習色彩學與圖檔格式的數位化應用。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Canva</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">色彩學</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 4: Software Application -->
+            <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E5%85%B6%E4%BB%96%E8%BB%9F%E9%AB%94%E6%95%99%E5%AD%B8" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-purple to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-files text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">軟體應用</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">Office Applications</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        Word 文書處理、PowerPoint 簡報設計與 Google 表單製作，提升文書生產力。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Word</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">PPT</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 5: Video Editing -->
+            <a href="https://sites.google.com/go.edu.tw/powerdirectorteaching" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-yellow to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-film-strip text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">影音剪輯</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">Video Editing</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        學習威力導演操作、影片後製剪輯技巧，以及 YouTube 頻道經營與影片上傳。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">威力導演</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">YouTube</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 6: Cloud Learning -->
+            <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/classroom-meet" target="_blank" class="glass-card rounded-3xl p-6 group cursor-none-target relative overflow-hidden block">
+                <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <i class="ph-fill ph-arrow-up-right text-2xl text-gray-400"></i>
+                </div>
+                <div class="flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-grey to-gray-300 shadow-lg flex items-center justify-center mb-6 icon-glow transform group-hover:rotate-6 transition-transform">
+                        <i class="ph ph-cloud text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">雲端學習</h3>
+                    <p class="text-sm text-gray-500 font-medium mb-4">Google Classroom</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4 flex-grow">
+                        熟悉 Google Classroom 作業繳交流程與 Google Meet 視訊會議操作。
+                    </p>
+                    <div class="flex gap-2 mt-auto">
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Classroom</span>
+                        <span class="text-xs px-2 py-1 bg-white/50 rounded-md text-gray-500">Meet</span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Extra Sections Widget Style -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Computer Club -->
+            <div class="glass rounded-3xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-4">
+                    <i class="ph ph-users-three text-2xl text-gray-600"></i>
+                    <h3 class="text-xl font-bold text-gray-800">電腦社團課程</h3>
+                </div>
+                <ul class="space-y-3">
+                    <li>
+                        <a href="https://hackmd.io/@careylin73/113comclub" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors group">
+                            <span class="text-gray-700 font-medium">113學年度 電腦社</span>
+                            <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-morandi-blue"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://hackmd.io/@careylin73/112comclub" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors group">
+                            <span class="text-gray-700 font-medium">112學年度 電腦社</span>
+                            <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-morandi-blue"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Resources -->
+            <div class="glass rounded-3xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-4">
+                    <i class="ph ph-link text-2xl text-gray-600"></i>
+                    <h3 class="text-xl font-bold text-gray-800">更多資源</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E5%85%8D%E8%B2%BB%E8%B3%87%E6%BA%90/pixabay%E5%9C%96%E7%89%87%E4%B8%8B%E8%BC%89%E6%95%99%E5%AD%B8" target="_blank" class="p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors text-center flex flex-col items-center justify-center gap-2 group">
+                        <i class="ph ph-image text-2xl text-gray-500 group-hover:text-morandi-rose"></i>
+                        <span class="text-sm text-gray-700 font-medium">Pixabay 圖庫</span>
+                    </a>
+                    <a href="https://www.youtube.com/@usercareyschannel" target="_blank" class="p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors text-center flex flex-col items-center justify-center gap-2 group">
+                        <i class="ph ph-youtube-logo text-2xl text-gray-500 group-hover:text-red-500"></i>
+                        <span class="text-sm text-gray-700 font-medium">Carey 頻道</span>
+                    </a>
+                    <a href="https://hackmd.io/@careylin73/109computer" target="_blank" class="p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors text-center flex flex-col items-center justify-center gap-2 group">
+                        <i class="ph ph-notebook text-2xl text-gray-500 group-hover:text-morandi-green"></i>
+                        <span class="text-sm text-gray-700 font-medium">109 教學網</span>
+                    </a>
+                     <a href="https://hackmd.io/@careylin73/110computer202" target="_blank" class="p-3 rounded-xl bg-white/40 hover:bg-white/70 transition-colors text-center flex flex-col items-center justify-center gap-2 group">
+                        <i class="ph ph-notebook text-2xl text-gray-500 group-hover:text-morandi-green"></i>
+                        <span class="text-sm text-gray-700 font-medium">110 教學網</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-gray-400 text-sm relative z-10">
+        <p>&copy; Carey's IT Classroom. All rights reserved.</p>
+        <p class="mt-2 text-xs">Designed for Nantou County Caotun Junior High School</p>
+    </footer>
+
+    <script>
+        // Mouse Trail Effect
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            // Dot follows instantly
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Outline follows with delay (via simple JS animation for smoothness)
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Hover effect scaling for cursor
+        document.querySelectorAll('a, button, .cursor-none-target').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.width = '60px';
+                cursorOutline.style.height = '60px';
+                cursorOutline.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                cursorOutline.style.border = 'none';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.width = '40px';
+                cursorOutline.style.height = '40px';
+                cursorOutline.style.backgroundColor = 'transparent';
+                cursorOutline.style.border = '1px solid rgba(74, 85, 104, 0.5)';
+            });
+        });
+
+        // Time Update
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('current-time').innerText = timeString;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Simple Tilt Effect for Cards
+        const cards = document.querySelectorAll('.glass-card');
+        
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -2; // Max rotation deg
+                const rotateY = ((x - centerX) / centerX) * 2;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+            });
+        });
+    </script>
+</body>
+</html>
