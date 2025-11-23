@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLIT Classroom 指揮中心</title>
     
+    <!-- ★★★ 網站小圖示 (Favicon) ★★★ -->
+    <link rel="icon" href="img/siteicon.png" type="image/png">
+
     <!-- 1. 基礎設定：Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -93,13 +96,13 @@
             { id: 104, date: '2025.11.01', category: 'CORE', title: 'Platform: 系統平台大冒險 課程更新', link: 'https://clitclassroom.github.io/platform/platformP1.html', highlight: false },
             { id: 103, date: '2025.11.15', category: 'SECURITY', title: 'DETECTED: 惡意程式與資訊安全 (Malware and Cyber Security) 課程更新', link: 'https://clitclassroom.github.io/malware/malware_security.html', highlight: false },
             { id: 102, date: '2025.11.10', category: 'GAME', title: 'SIMULATION READY: 惡意源碼配對戰已部屬', link: 'https://clitclassroom.github.io/malware/malwaregame.html', highlight: true },
-            { id: 101, date: '2025.11.19', category: 'MEDIA', title: 'LOADED: PhotoCap 製作大頭照教學', link: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', highlight: false },
+            { id: 101, date: '2025.11.19', category: 'MEDIA', title: 'LOADED: PhotoCap 製作大頭照教學', link: 'https://mushroomonthehill.github.io/PhotoCap/headalbum.html', highlight: false },
         ];
 
         const CORE_STATUS = {
             active: true,
             level: 'WARNING',
-            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 113電腦社社員請注意作業繳交期限。'
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
         };
 
         const MODULES = [
@@ -108,11 +111,16 @@
                 icon: <Database size={24} />, color: 'text-blue-400', borderColor: 'border-blue-400/50', shadowColor: 'rgba(96, 165, 250, 0.4)',
                 description: '基礎操作、行政規範、Office 生產力工具',
                 links: [
-                    { title: '資訊課上課規則', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer' },
-                    { title: 'Classroom 及 Meet 使用指南', url: '#' },
-                    { title: '基礎操作：中英打練習', url: '#' },
-                    { title: '辦公室協作：Google 表單/簡報', url: '#' },
-                    { title: '113 電腦社課程', url: '#', tag: 'NEW' },
+                    { title: '資訊課上課規則', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%B3%87%E8%A8%8A%E8%AA%B2%E4%B8%8A%E8%AA%B2%E8%A6%8F%E5%89%87' },
+                    { title: '認識鍵盤', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%AA%8D%E8%AD%98%E9%8D%B5%E7%9B%A4' },
+                    { title: '電腦硬體中英文對照', url: 'https://hackmd.io/@careylin73/computerhardware' },
+                    { title: 'Windows 快速鍵', url: 'https://hackmd.io/@careylin73/windowskeys' },
+                    { title: 'Classroom 及 Meet 使用指南', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/classroom-meet/classroom-%E5%8F%8A-meet-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97' },
+                    { title: '基礎操作：中英打練習', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E9%9B%BB%E8%85%A6%E6%89%93%E5%AD%97%E7%B7%B4%E7%BF%92%E8%8B%B1%E6%96%87%E6%89%93%E5%AD%97' },
+                    { title: '辦公室協作：Google 表單', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/google%E8%A1%A8%E5%96%AE%E8%A3%BD%E4%BD%9C' },
+                    { title: '教育帳號建立說明', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E6%95%99%E8%82%B2%E5%B8%B3%E8%99%9F%E5%BB%BA%E7%AB%8B%E8%AA%AA%E6%98%8E' },
+                    { title: 'Word教學', url: 'https://hackmd.io/@careylin73/word01' },
+                    { title: '簡報教學PowerPoint', url: 'https://hackmd.io/@careylin73/ppthowto' },
                 ]
             },
             {
@@ -120,10 +128,18 @@
                 icon: <Activity size={24} />, color: 'text-purple-400', borderColor: 'border-purple-400/50', shadowColor: 'rgba(192, 132, 252, 0.4)',
                 description: '資訊科學概念、數據原理、資料數位化',
                 links: [
-                    { title: '資訊科技基本概念', url: '#' },
-                    { title: '二進位與數據表示', url: '#' },
-                    { title: '數位音訊與影像原理', url: '#' },
-                    { title: '演算法理論基礎', url: '#' },
+                    { title: '資料儲存單位', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%B3%87%E6%96%99%E5%84%B2%E5%AD%98%E5%96%AE%E4%BD%8D' },
+                    { title: '數位系統-十進位轉換', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E6%95%B8%E4%BD%8D%E7%B3%BB%E7%B5%B1-%E5%8D%81%E9%80%B2%E4%BD%8D%E8%BD%89%E6%8F%9B' },
+                    { title: '文字數位化', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E6%96%87%E5%AD%97%E6%95%B8%E4%BD%8D%E5%8C%96' },
+                    { title: '聲音數位化', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%81%B2%E9%9F%B3%E6%95%B8%E4%BD%8D%E5%8C%96' },
+                    { title: '影像數位化', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E5%BD%B1%E5%83%8F%E6%95%B8%E4%BD%8D%E5%8C%96' },
+                    { title: '資訊科技基本概念:探索網路', url: 'https://hackmd.io/@careylin73/aboutweb' },
+                    { title: 'AI人工智慧', url: 'https://hackmd.io/@careylin73/aboutAI' },
+                    { title: 'AI安全使用指南', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/ai%E5%AE%89%E5%85%A8%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97' },
+                    { title: '演算法', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E6%BC%94%E7%AE%97%E6%B3%95' },
+                    { title: '簡易替換式密碼系統', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%B3%87%E8%A8%8A%E7%A7%91%E6%8A%80%E7%9B%B8%E9%97%9C/%E7%B0%A1%E6%98%93%E6%9B%BF%E6%8F%9B%E5%BC%8F%E5%AF%86%E7%A2%BC%E7%B3%BB%E7%B5%B1' },
+                    { title: '恐龍遊戲Dinosaur Game', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/%E8%B3%87%E8%A8%8A%E7%A7%91%E6%8A%80%E7%9B%B8%E9%97%9C/%E6%81%90%E9%BE%8D%E9%81%8A%E6%88%B2dinosaur-game' },
+                    { title: '系統平台Part1', url: 'https://clitclassroom.github.io/platform/platformP1.html', tag: 'NEW'},
                 ]
             },
             {
@@ -131,10 +147,10 @@
                 icon: <Code size={24} />, color: 'text-green-400', borderColor: 'border-green-400/50', shadowColor: 'rgba(74, 222, 128, 0.4)',
                 description: 'Python, Scratch, AI2, 實體控制',
                 links: [
-                    { title: 'Python 程式設計入門', url: '#' },
-                    { title: 'Scratch 動畫與遊戲 (01-07)', url: '#' },
-                    { title: 'App Inventor 2 手機程式', url: '#' },
-                    { title: 'NKNUBlock 硬體控制', url: '#' },
+                    { title: 'Python 程式設計入門', url: 'https://hackmd.io/@careylin73/aboutpython#Python%E7%A8%8B%E5%BC%8F%E8%A8%AD%E8%A8%88' },
+                    { title: 'Scratch 動畫與遊戲', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/scratch-drawing/%E9%A6%96%E9%A0%81' },
+                    { title: 'App Inventor 2 手機程式', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/appinvetor/ai2-%E5%B8%B3%E8%99%9F%E8%A8%BB%E5%86%8A' },
+                    { title: 'NKNUBlock 硬體控制', url: 'https://sites.google.com/go.edu.tw/nknublock4060/%E9%A6%96%E9%A0%81' },
                 ]
             },
             {
@@ -142,22 +158,22 @@
                 icon: <PenTool size={24} />, color: 'text-yellow-400', borderColor: 'border-yellow-400/50', shadowColor: 'rgba(250, 204, 21, 0.4)',
                 description: '平面設計、影音剪輯、雷切實作',
                 links: [
-                    { title: 'Canva 設計實戰', url: '#' },
-                    { title: 'PhotoCap 大頭照製作', url: '#', tag: 'UPDATED' },
-                    { title: '威力導演影片剪輯', url: '#' },
-                    { title: '雷切小夜燈實作', url: '#' },
+                    { title: '關於色彩', url: 'https://hackmd.io/@careylin73/aboutcolors' },
+                    { title: 'Canva 設計實戰', url: 'https://www.youtube.com/playlist?list=PLPKCAOepXwiJxMX1fY0w-w9Hxj45SDHz-' },
+                    { title: '威力導演影片剪輯', url: 'https://sites.google.com/go.edu.tw/powerdirectorteaching' },
+                    { title: '雷切小夜燈實作', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/nightlamps/%E9%A6%96%E9%A0%81' },
+                    { title: 'PhotoCap 大頭照製作', url: 'https://sites.google.com/go.edu.tw/videouploadteaching', tag: 'NEW'},
                 ]
             },
             {
                 id: 'security', name: '網路攻防與資安', sub: 'Cyber Defense',
                 icon: <Shield size={24} />, color: 'text-red-500', borderColor: 'border-red-500/50', shadowColor: 'rgba(239, 68, 68, 0.6)',
                 // 移除 isHighlight: true，讓它回復正常寬度，以便與指揮官模組並排
-                description: '惡意程式、資訊安全、駭客挑戰', 
+                description: '惡意程式、資訊安全、網路安全、駭客挑戰', 
                 links: [
                     { title: '惡意程式與資訊安全 (新版)', url: 'https://clitclassroom.github.io/malware/malware_security.html', type: 'external_highlight' },
-                    { title: '零日攻擊 (Zero Day)', url: '#' },
-                    { title: '釣魚網站防護', url: '#' },
-                    { title: 'AI 安全使用指南', url: '#' },
+                    { title: '假訊息與假新聞', url: 'https://hackmd.io/@careylin73/fakenews' },
+                    { title: 'AI 安全使用指南', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/ai%E5%AE%89%E5%85%A8%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97' },
                 ]
             },
             {
