@@ -81,6 +81,8 @@
         const ArrowRight = (p) => <IconBase {...p}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconBase>;
         const Github = (p) => <IconBase {...p}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></IconBase>;
         const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></IconBase>;
+        // 新增：User 圖示 (指揮官使用)
+        const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></IconBase>;
 
         // ==========================================
         // 資料設定區
@@ -89,7 +91,7 @@
         const SYSTEM_LOGS = [
             { id: 105, date: '2025.11.23', category: 'SYSTEM', title: 'CLIT Classroom V2.0 指揮中心上線', highlight: true },
             { id: 104, date: '2025.11.01', category: 'CORE', title: 'Platform: 系統平台大冒險 課程更新', link: 'https://clitclassroom.github.io/platform/platformP1.html', highlight: false },
-            { id: 103, date: '2025.11.15', category: 'SECURITY', title: 'DETECTED: 惡意程式與資訊安全 (Malware and Cyber Security) 課程更新', link: 'https://clitclassroom.github.io/malware/malware_security',htmlhighlight: false },
+            { id: 103, date: '2025.11.15', category: 'SECURITY', title: 'DETECTED: 惡意程式與資訊安全 (Malware and Cyber Security) 課程更新', link: 'https://clitclassroom.github.io/malware/malware_security.html', highlight: false },
             { id: 102, date: '2025.11.10', category: 'GAME', title: 'SIMULATION READY: 惡意源碼配對戰已部屬', link: 'https://clitclassroom.github.io/malware/malwaregame.html', highlight: true },
             { id: 101, date: '2025.11.19', category: 'MEDIA', title: 'LOADED: PhotoCap 製作大頭照教學', link: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', highlight: false },
         ];
@@ -97,7 +99,7 @@
         const CORE_STATUS = {
             active: true,
             level: 'WARNING',
-            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 114上資訊科技課程進行中請注意作業繳交期限。'
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 113電腦社社員請注意作業繳交期限。'
         };
 
         const MODULES = [
@@ -149,12 +151,25 @@
             {
                 id: 'security', name: '網路攻防與資安', sub: 'Cyber Defense',
                 icon: <Shield size={24} />, color: 'text-red-500', borderColor: 'border-red-500/50', shadowColor: 'rgba(239, 68, 68, 0.6)',
-                description: '惡意程式、資訊安全、駭客挑戰', isHighlight: true,
+                // 移除 isHighlight: true，讓它回復正常寬度，以便與指揮官模組並排
+                description: '惡意程式、資訊安全、駭客挑戰', 
                 links: [
                     { title: '惡意程式與資訊安全 (新版)', url: 'https://clitclassroom.github.io/malware/malware_security.html', type: 'external_highlight' },
                     { title: '零日攻擊 (Zero Day)', url: '#' },
                     { title: '釣魚網站防護', url: '#' },
                     { title: 'AI 安全使用指南', url: '#' },
+                ]
+            },
+            {
+                // 新增：指揮官模組
+                id: 'commander', name: '指揮官履歷', sub: 'Commander Profile',
+                icon: <User size={24} />, color: 'text-cyan-400', borderColor: 'border-cyan-400/50', shadowColor: 'rgba(34, 211, 238, 0.4)',
+                description: 'Carey - 國中資訊科技教師',
+                links: [
+                    { title: 'Carey 的資訊科技教室', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', type: 'external_highlight' },
+                    { title: 'Youtube 頻道', url: 'https://www.youtube.com/@usercareyschannel' },
+                    { title: 'Hackmd 筆記', url: 'https://hackmd.io/@careylin73' },
+                    { title: '舊教學網頁', url: 'http://163.22.76.240/~carey/' },
                 ]
             }
         ];
