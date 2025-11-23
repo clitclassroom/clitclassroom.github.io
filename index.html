@@ -3,564 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CL IT Classroom | 資訊科技教學部落格</title>
+    <title>CLIT Classroom 指揮中心</title>
+    
+    <!-- 1. 基礎設定：Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- ★★★ 網站小圖示 (Favicon) ★★★ -->
-    <link rel="icon" href="img/siteicon.png" type="image/png">
+    <!-- 2. 引入 React 核心 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    <!-- 引入 Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
-    <!-- 引入 FontAwesome 圖標 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 3. 引入 Babel (編譯 JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- 注意：已移除 Lucide CDN，改用內建圖示以確保 100% 穩定性 -->
+
     <style>
-        /* ----------------------------------------
-           1. 全域變數設定 (方便修改配色)
-           ---------------------------------------- */
-        :root {
-            --bg-color: #080808;          /* 極致黑背景 */
-            --card-bg: rgba(25, 25, 25, 0.6); /* 卡片半透明背景 */
-            --primary: #00ffcc;           /* 霓虹青 (主色) */
-            --secondary: #ff0055;         /* 激光紅 (撞色) */
-            --accent: #ffe600;            /* 警示黃 (點綴) */
-            --text-main: #ffffff;         /* 主要文字 */
-            --text-muted: #888888;        /* 次要文字 */
-            --font-title: 'Orbitron', sans-serif; /* 科技感標題字體 */
-            --font-body: 'Noto Sans TC', sans-serif; /* 內文黑體 */
-            --grid-color: rgba(0, 255, 204, 0.05);
-        }
-
-        /* ----------------------------------------
-           2. 基礎重置與佈局
-           ---------------------------------------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            cursor: none; /* 隱藏預設滑鼠游標 */
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-body);
-            overflow-x: hidden;
-            /* 背景動態網格 */
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 40px 40px;
-            min-height: 100vh;
-        }
-
-        /* 捲軸美化 */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-
-        /* ----------------------------------------
-           3. 自定義動態游標 (Custom Cursor)
-           ---------------------------------------- */
-        .cursor-dot,
-        .cursor-outline {
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none; /* 讓點擊穿透 */
-        }
-
-        .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--primary);
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
-        }
-
-        /* 當滑鼠懸停在互動元素上時的樣式 */
-        body.hovering .cursor-outline {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(255, 0, 85, 0.1); /* 變為紅色半透明 */
-            border-color: var(--secondary);
-            mix-blend-mode: difference;
-        }
-
-        /* ----------------------------------------
-           4. 頭部區域 (Hero Section)
-           ---------------------------------------- */
-        header {
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-
-        /* 故障文字效果 (Glitch Text) */
-        .hero-title {
-            font-family: var(--font-title);
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            position: relative;
-            letter-spacing: 5px;
-            color: var(--text-main);
-            text-shadow: 2px 2px 0px var(--secondary);
-        }
-
-        .hero-title::before,
-        .hero-title::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-color);
-        }
-
-        .hero-title::before {
-            left: 2px;
-            text-shadow: -2px 0 var(--primary);
-            clip-path: inset(20% 0 80% 0);
-            animation: glitch-anim-1 4s infinite linear alternate-reverse;
-        }
-
-        .hero-title::after {
-            left: -2px;
-            text-shadow: -2px 0 var(--secondary);
-            clip-path: inset(60% 0 10% 0);
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
-
-        .hero-subtitle {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 10px 30px;
-            background: rgba(0, 255, 204, 0.1);
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            transition: 0.3s;
-        }
+        body { margin: 0; cursor: none; background-color: #050505; }
         
-        .hero-subtitle:hover {
-            background: var(--primary);
-            color: #000;
-            box-shadow: 0 0 20px var(--primary);
+        /* 自定義 Hacker 風格卷軸 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #050505; border-left: 1px solid #111; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #15803d; border-radius: 0; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #22c55e; }
+        
+        /* 動畫定義 */
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { animation: marquee 20s linear infinite; }
+        
+        @keyframes glitch-shake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0, 0); }
         }
-
-        /* 向下滾動提示 */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 50px;
-            animation: bounce 2s infinite;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-        }
-
-        /* ----------------------------------------
-           5. 內容網格系統
-           ---------------------------------------- */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 50px 20px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 40px;
-        }
-
-        /* ----------------------------------------
-           6. 卡片組件設計
-           ---------------------------------------- */
-        .card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 40px 30px;
-            position: relative;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            /* 3D 透視設定 */
-            transform-style: preserve-3d;
-            transform: perspective(1000px);
-            transition: border-color 0.3s;
-            overflow: hidden;
-        }
-
-        /* 卡片頂部裝飾條 */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            opacity: 0.5;
-            transition: 0.3s;
-        }
-
-        .card:hover {
-            border-color: var(--secondary);
-        }
-
-        .card:hover::before {
-            opacity: 1;
-            height: 6px;
-            box-shadow: 0 0 15px var(--secondary);
-        }
-
-        /* 圖標樣式 */
-        .icon-wrapper {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-            transition: 0.4s;
-            border: 1px solid transparent;
-            transform: translateZ(20px); /* 3D 浮凸效果 */
-        }
-
-        .card:hover .icon-wrapper {
-            background: transparent;
-            border-color: var(--primary);
-            color: var(--text-main);
-            box-shadow: 0 0 15px var(--primary);
-            transform: translateZ(40px) rotateY(180deg); /* 圖標翻轉 */
-        }
-
-        .card-title {
-            font-family: var(--font-title);
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--text-main);
-            transform: translateZ(15px);
-        }
-
-        .card-desc {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            transform: translateZ(10px);
-        }
-
-        /* 分類標籤 (右上角) */
-        .card-tag {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 0.7rem;
-            color: var(--accent);
-            border: 1px solid var(--accent);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: var(--font-title);
-            opacity: 0.7;
-        }
-
-        /* Read More 按鈕 */
-        .read-more {
-            display: inline-block;
-            margin-top: 25px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: 0.3s;
-            transform: translateZ(10px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .read-more:hover {
-            color: var(--secondary);
-            gap: 15px; /* 箭頭移動效果 */
-        }
-
-        /* ----------------------------------------
-           7. 頁尾
-           ---------------------------------------- */
-        footer {
-            padding: 60px 20px;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 80px;
-            background: #000;
-        }
-
-        .footer-text {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .social-icons a {
-            color: var(--text-main);
-            margin: 0 10px;
-            font-size: 1.2rem;
-            transition: 0.3s;
-        }
-        .social-icons a:hover { color: var(--primary); }
-
-        /* ----------------------------------------
-           8. 動畫定義
-           ---------------------------------------- */
-        @keyframes glitch-anim-1 {
-            0% { clip-path: inset(20% 0 80% 0); }
-            20% { clip-path: inset(60% 0 10% 0); }
-            40% { clip-path: inset(40% 0 50% 0); }
-            60% { clip-path: inset(80% 0 5% 0); }
-            80% { clip-path: inset(10% 0 70% 0); }
-            100% { clip-path: inset(30% 0 20% 0); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip-path: inset(10% 0 60% 0); }
-            20% { clip-path: inset(30% 0 20% 0); }
-            40% { clip-path: inset(70% 0 10% 0); }
-            60% { clip-path: inset(20% 0 50% 0); }
-            80% { clip-path: inset(50% 0 30% 0); }
-            100% { clip-path: inset(0% 0 90% 0); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(10px); }
-        }
-
-        /* 手機版適配 */
-        @media (max-width: 768px) {
-            .cursor-dot, .cursor-outline { display: none; } /* 手機隱藏自訂游標 */
-            * { cursor: auto; }
-            .hero-title { font-size: 3rem; }
-        }
+        .hover-glitch:hover { animation: glitch-shake 0.3s cubic-bezier(.36,.07,.19,.97) both; z-index: 20; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <!-- 自定義游標元素 -->
-    <div class="cursor-dot" data-cursor-dot></div>
-    <div class="cursor-outline" data-cursor-outline></div>
+    <script type="text/babel">
+        // 取得 React Hook
+        const { useState, useEffect, useRef } = React;
+        
+        // ==========================================
+        // 內建圖示系統 (Internal Icon System)
+        // 解決 CDN 相容性問題，直接將 SVG 路徑寫入
+        // ==========================================
+        
+        const IconBase = ({ size = 24, color = "currentColor", children, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke={color} 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className={className}
+            >
+                {children}
+            </svg>
+        );
 
-    <header>
-        <h1 class="hero-title" data-text="CL IT CLASSROOM">CL IT CLASSROOM</h1>
-        <div class="hero-subtitle" data-hover>
-            探索未來 &middot; 解碼科技 &middot; 創造價值
-        </div>
-        <div class="scroll-indicator">
-            <i class="fa-solid fa-chevron-down"></i>
-        </div>
-    </header>
+        const Terminal = (p) => <IconBase {...p}><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></IconBase>;
+        const Database = (p) => <IconBase {...p}><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></IconBase>;
+        const Activity = (p) => <IconBase {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></IconBase>;
+        const Code = (p) => <IconBase {...p}><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></IconBase>;
+        const PenTool = (p) => <IconBase {...p}><path d="m12 19 7-7 3 3-7 7-3-3z"></path><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="m2 2 7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></IconBase>;
+        const Shield = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></IconBase>;
+        const Zap = (p) => <IconBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></IconBase>;
+        const ExternalLink = (p) => <IconBase {...p}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></IconBase>;
+        const ChevronRight = (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"></polyline></IconBase>;
+        const ArrowRight = (p) => <IconBase {...p}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconBase>;
+        const Github = (p) => <IconBase {...p}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></IconBase>;
+        const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></IconBase>;
 
-    <main class="container">
-        <div class="grid">
-            <!-- 01. 數位時代與生活 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">01</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-earth-americas"></i></div>
-                <h3 class="card-title">數位時代與生活</h3>
-                <p class="card-desc">物聯網(IoT)、大數據與智慧城市如何重塑我們的日常。探討數位足跡對個人隱私的影響。</p>
-                <a href="https://www.google.com" target="_blank" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        // ==========================================
+        // 資料設定區
+        // ==========================================
 
-            <!-- 02. 數字系統 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">02</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-hashtag"></i></div>
-                <h3 class="card-title">數字系統</h3>
-                <p class="card-desc">深入底層邏輯：二進位、十六進位與資料編碼。了解電腦如何儲存與處理資訊。</p>
-                <a href="#" target="_blank" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        const SYSTEM_LOGS = [
+            { id: 105, date: '2025.11.23', category: 'SYSTEM', title: 'CLIT Classroom V2.0 指揮中心上線', highlight: true },
+            { id: 104, date: '2025.11.01', category: 'CORE', title: 'Platform: 系統平台大冒險 課程更新', link: 'https://clitclassroom.github.io/platform/platformP1.html', highlight: false },
+            { id: 103, date: '2025.11.15', category: 'SECURITY', title: 'DETECTED: 惡意程式與資訊安全 (Malware and Cyber Security) 課程更新', link: 'https://clitclassroom.github.io/malware/malware_security',htmlhighlight: false },
+            { id: 102, date: '2025.11.10', category: 'GAME', title: 'SIMULATION READY: 惡意源碼配對戰已部屬', link: 'https://clitclassroom.github.io/malware/malwaregame.html', highlight: true },
+            { id: 101, date: '2025.11.19', category: 'MEDIA', title: 'LOADED: PhotoCap 製作大頭照教學', link: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', highlight: false },
+        ];
 
-            <!-- 03. 探索網路 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">03</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-network-wired"></i></div>
-                <h3 class="card-title">探索網路</h3>
-                <p class="card-desc">從 TCP/IP 協定到 5G 通訊技術。解析網際網路架構與雲端運算原理。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        const CORE_STATUS = {
+            active: true,
+            level: 'WARNING',
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 114上資訊科技課程進行中請注意作業繳交期限。'
+        };
 
-            <!-- 04. 系統平台 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">04</span>
-                <div class="icon-wrapper"><i class="fa-brands fa-linux"></i></div>
-                <h3 class="card-title">系統平台</h3>
-                <p class="card-desc">作業系統核心解析：Windows, MacOS, Linux 與行動裝置平台的運作差異。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        const MODULES = [
+            {
+                id: 'core', name: '系統核心整備', sub: 'System Core Setup',
+                icon: <Database size={24} />, color: 'text-blue-400', borderColor: 'border-blue-400/50', shadowColor: 'rgba(96, 165, 250, 0.4)',
+                description: '基礎操作、行政規範、Office 生產力工具',
+                links: [
+                    { title: '資訊課上課規則', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer' },
+                    { title: 'Classroom 及 Meet 使用指南', url: '#' },
+                    { title: '基礎操作：中英打練習', url: '#' },
+                    { title: '辦公室協作：Google 表單/簡報', url: '#' },
+                    { title: '113 電腦社課程', url: '#', tag: 'NEW' },
+                ]
+            },
+            {
+                id: 'decode', name: '數位情報解碼', sub: 'Digital Intelligence',
+                icon: <Activity size={24} />, color: 'text-purple-400', borderColor: 'border-purple-400/50', shadowColor: 'rgba(192, 132, 252, 0.4)',
+                description: '資訊科學概念、數據原理、資料數位化',
+                links: [
+                    { title: '資訊科技基本概念', url: '#' },
+                    { title: '二進位與數據表示', url: '#' },
+                    { title: '數位音訊與影像原理', url: '#' },
+                    { title: '演算法理論基礎', url: '#' },
+                ]
+            },
+            {
+                id: 'logic', name: '程式邏輯架構', sub: 'Logic & Structure',
+                icon: <Code size={24} />, color: 'text-green-400', borderColor: 'border-green-400/50', shadowColor: 'rgba(74, 222, 128, 0.4)',
+                description: 'Python, Scratch, AI2, 實體控制',
+                links: [
+                    { title: 'Python 程式設計入門', url: '#' },
+                    { title: 'Scratch 動畫與遊戲 (01-07)', url: '#' },
+                    { title: 'App Inventor 2 手機程式', url: '#' },
+                    { title: 'NKNUBlock 硬體控制', url: '#' },
+                ]
+            },
+            {
+                id: 'media', name: '創意媒體專案', sub: 'Creative Media',
+                icon: <PenTool size={24} />, color: 'text-yellow-400', borderColor: 'border-yellow-400/50', shadowColor: 'rgba(250, 204, 21, 0.4)',
+                description: '平面設計、影音剪輯、雷切實作',
+                links: [
+                    { title: 'Canva 設計實戰', url: '#' },
+                    { title: 'PhotoCap 大頭照製作', url: '#', tag: 'UPDATED' },
+                    { title: '威力導演影片剪輯', url: '#' },
+                    { title: '雷切小夜燈實作', url: '#' },
+                ]
+            },
+            {
+                id: 'security', name: '網路攻防與資安', sub: 'Cyber Defense',
+                icon: <Shield size={24} />, color: 'text-red-500', borderColor: 'border-red-500/50', shadowColor: 'rgba(239, 68, 68, 0.6)',
+                description: '惡意程式、資訊安全、駭客挑戰', isHighlight: true,
+                links: [
+                    { title: '惡意程式與資訊安全 (新版)', url: 'https://clitclassroom.github.io/malware/malware_security.html', type: 'external_highlight' },
+                    { title: '零日攻擊 (Zero Day)', url: '#' },
+                    { title: '釣魚網站防護', url: '#' },
+                    { title: 'AI 安全使用指南', url: '#' },
+                ]
+            }
+        ];
 
-            <!-- 05. AI人工智慧 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">05</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-brain"></i></div>
-                <h3 class="card-title">AI人工智慧</h3>
-                <p class="card-desc">機器學習、深度學習與生成式 AI (Generative AI)。探索矽基智慧的無限可能。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        const SIMULATIONS = [
+            { title: '惡意源碼配對戰', sub: 'MALWARE BATTLE', url: 'https://clitclassroom.github.io/malware/malwaregame.html', color: 'bg-red-600 hover:bg-red-500', status: 'COMBAT READY' },
+            { title: '系統平台模擬', sub: 'SYSTEM PLATFORM', url: 'https://clitclassroom.github.io/platform/platformP1.html', color: 'bg-blue-600 hover:bg-blue-500', status: 'ONLINE' }
+        ];
 
-            <!-- 06. 惡意程式與資訊安全 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">06</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-shield-virus"></i></div>
-                <h3 class="card-title">惡意程式與資安</h3>
-                <p class="card-desc">白帽 vs 黑帽。常見的攻擊手法如釣魚、勒索軟體，以及如何建立強大的防禦體系。</p>
-                <!-- 修改重點：連結至新頁面 malware_security.html -->
-                <a href="malware_security.html" target="_blank" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        // ==========================================
+        // 主程式邏輯
+        // ==========================================
 
-            <!-- 07. 演算法 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">07</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-diagram-project"></i></div>
-                <h3 class="card-title">演算法</h3>
-                <p class="card-desc">運算思維的核心。排序、搜尋、遞迴，學習如何用最有效率的方式解決複雜問題。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+        const App = () => {
+            const [activeModule, setActiveModule] = useState(null);
+            const [bootSequence, setBootSequence] = useState(true);
+            const [currentTime, setCurrentTime] = useState(new Date());
+            const [onlineCount, setOnlineCount] = useState(128);
+            const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+            const [cursorVariant, setCursorVariant] = useState("default");
 
-            <!-- 08. 資訊社會下的產物 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">08</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-vr-cardboard"></i></div>
-                <h3 class="card-title">資訊社會下的產物</h3>
-                <p class="card-desc">元宇宙、區塊鏈、NFT 與社群媒體。科技如何改變人類的社會結構與互動。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+            // 系統初始化與計時器
+            useEffect(() => {
+                const timer = setTimeout(() => setBootSequence(false), 2000);
+                const clock = setInterval(() => setCurrentTime(new Date()), 1000);
+                const userTimer = setInterval(() => {
+                    setOnlineCount(prev => Math.max(80, Math.min(250, prev + (Math.floor(Math.random() * 7) - 3))));
+                }, 4000);
+                return () => { clearTimeout(timer); clearInterval(clock); clearInterval(userTimer); };
+            }, []);
 
-            <!-- 09. 平面設計 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">09</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-pen-nib"></i></div>
-                <h3 class="card-title">平面設計</h3>
-                <p class="card-desc">UI/UX 設計原則。色彩心理學、排版美學與視覺傳達，將資訊轉化為藝術。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
+            // 滑鼠追蹤
+            useEffect(() => {
+                const mouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+                window.addEventListener("mousemove", mouseMove);
+                return () => window.removeEventListener("mousemove", mouseMove);
+            }, []);
 
-            <!-- 10. 程式設計 -->
-            <article class="card" data-tilt>
-                <span class="card-tag">10</span>
-                <div class="icon-wrapper"><i class="fa-solid fa-code"></i></div>
-                <h3 class="card-title">程式設計</h3>
-                <p class="card-desc">Python, JavaScript, C++。從 Hello World 開始，構建屬於你的數位世界。</p>
-                <a href="#" class="read-more" data-hover>READ MORE <i class="fa-solid fa-arrow-right"></i></a>
-            </article>
-        </div>
-    </main>
+            const formatTime = (date) => date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const cursorEnterLink = () => setCursorVariant("text");
+            const cursorLeave = () => setCursorVariant("default");
 
-    <footer>
-        <p class="footer-text">&copy; 2025 CL IT CLASSROOM(Ver.1.0.0). SYSTEM ONLINE.</p>
-        <div class="social-icons">
-            <a href="#" data-hover><i class="fa-brands fa-github"></i></a>
-        </div>
-    </footer>
+            // 開機動畫
+            if (bootSequence) {
+                return (
+                    <div className="min-h-screen bg-black text-green-500 font-mono flex flex-col items-center justify-center p-4 cursor-none">
+                        <div className="text-2xl mb-4 animate-pulse">INITIALIZING CLIT PROTOCOL...</div>
+                        <div className="w-64 h-2 bg-gray-800 rounded overflow-hidden border border-green-900">
+                            <div className="h-full bg-green-500 animate-[width_2s_ease-in-out] w-full"></div>
+                        </div>
+                        <div className="mt-2 text-xs text-green-700">
+                            {'>'} LOADING MODULES... OK<br/>
+                            {'>'} CHECKING SECURITY... OK<br/>
+                            {'>'} ESTABLISHING LINK... SUCCESS
+                        </div>
+                    </div>
+                );
+            }
 
-    <script>
-        // ---------------------------------------------------
-        // 1. 自定義游標邏輯 (Custom Cursor Logic)
-        // ---------------------------------------------------
-        const cursorDot = document.querySelector("[data-cursor-dot]");
-        const cursorOutline = document.querySelector("[data-cursor-outline]");
+            // 主介面
+            return (
+                <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-green-500 selection:text-black overflow-x-hidden relative cursor-none">
+                    {/* 游標效果 */}
+                    <div className="fixed top-0 left-0 w-2 h-2 bg-green-500 rounded-full pointer-events-none z-[9999] mix-blend-difference" style={{ transform: `translate(${mousePos.x - 4}px, ${mousePos.y - 4}px)` }} />
+                    <div className="fixed top-0 left-0 w-8 h-8 border border-green-500/50 rounded-full pointer-events-none z-[9998] transition-transform duration-100 ease-out flex items-center justify-center"
+                        style={{ transform: `translate(${mousePos.x - 16}px, ${mousePos.y - 16}px) scale(${cursorVariant === "text" ? 1.5 : 1})`, borderColor: cursorVariant === "text" ? '#22c55e' : 'rgba(34, 197, 94, 0.5)' }}>
+                        <div className="absolute w-full h-[1px] bg-green-500/20"></div>
+                        <div className="absolute h-full w-[1px] bg-green-500/20"></div>
+                    </div>
 
-        window.addEventListener("mousemove", function (e) {
-            const posX = e.clientX;
-            const posY = e.clientY;
+                    {/* 背景網格 */}
+                    <div className="fixed inset-0 pointer-events-none z-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#00ff41 1px, transparent 1px), linear-gradient(90deg, #00ff41 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+                    
+                    {/* Header */}
+                    <header className="relative z-10 border-b border-gray-800 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0">
+                        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-3 group cursor-none" onClick={() => setActiveModule(null)} onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave}>
+                                <div className="w-10 h-10 bg-green-900/20 border border-green-500/50 flex items-center justify-center rounded relative overflow-hidden group-hover:border-green-400 transition-colors">
+                                    <Terminal size={20} className="text-green-400" />
+                                    <div className="absolute inset-0 bg-green-400/10 animate-pulse"></div>
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold tracking-wider text-white font-mono">CLIT<span className="text-green-500">_CLASSROOM</span></h1>
+                                    <p className="text-[10px] text-green-600 tracking-[0.2em] uppercase">System Ready</p>
+                                </div>
+                            </div>
+                            
+                            <div className="hidden md:flex items-center gap-6 font-mono text-sm text-green-500/80">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                    NET: SECURE
+                                </div>
+                                <div className="flex items-center gap-2 border-l border-gray-800 pl-6">
+                                    <Users size={14} className="text-green-500" />
+                                    <span>ONLINE: <span className="text-green-400 font-bold">{onlineCount}</span></span>
+                                </div>
+                                <div className="border-l border-gray-800 pl-6">
+                                    {formatTime(currentTime)}
+                                </div>
+                            </div>
+                        </div>
+                    </header>
 
-            // 圓點直接跟隨
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
+                    {/* 跑馬燈 */}
+                    {CORE_STATUS.active && (
+                        <div className={`relative z-10 overflow-hidden ${CORE_STATUS.level === 'WARNING' ? 'bg-red-900/20 border-y border-red-900/50' : 'bg-blue-900/20'} py-1`}>
+                            <div className="whitespace-nowrap animate-marquee inline-block">
+                                {[1,2,3].map(i => (
+                                    <span key={i} className={`mx-4 font-mono font-bold ${CORE_STATUS.level === 'WARNING' ? 'text-red-400' : 'text-blue-400'}`}>
+                                        [{CORE_STATUS.level}] {CORE_STATUS.message}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-            // 外框使用 animate 實現平滑延遲跟隨
-            cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
-        });
+                    <main className="relative z-10 max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* 左側欄 */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="bg-[#0a0a0a] border border-green-900/50 rounded-lg overflow-hidden shadow-[0_0_15px_rgba(0,255,65,0.05)]">
+                                <div className="bg-gray-900/50 px-4 py-2 border-b border-green-900/30 flex justify-between items-center">
+                                    <h3 className="text-sm font-mono text-green-500 flex items-center gap-2"><Activity size={14} /> SYSTEM_LOG</h3>
+                                    <span className="text-[10px] text-gray-500">v2.0.1</span>
+                                </div>
+                                <div className="p-4 h-[300px] overflow-y-auto font-mono text-xs custom-scrollbar">
+                                    {SYSTEM_LOGS.map((log) => (
+                                        <div key={log.id} className={`mb-3 pb-2 border-b border-dashed border-gray-800 last:border-0 ${log.highlight ? 'opacity-100' : 'opacity-70 hover:opacity-100'} transition-opacity`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-green-700">[{log.date}]</span>
+                                                <span className={`px-1 rounded text-[10px] ${log.highlight ? 'bg-green-500 text-black font-bold' : 'bg-gray-800 text-gray-400'}`}>{log.category}</span>
+                                            </div>
+                                            <div className="text-gray-300 pl-2 border-l-2 border-gray-800 hover:border-green-500 transition-colors group">
+                                                <a href={log.link || "#"} target={log.link ? "_blank" : "_self"} className="group-hover:text-green-400 transition-colors block cursor-none" onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave}>
+                                                    <span className="mr-1">{">>>"}</span> {log.title}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="animate-pulse text-green-500 mt-4">_ Awaiting input...</div>
+                                </div>
+                            </div>
+                            <div className="grid gap-4">
+                                {SIMULATIONS.map((sim, idx) => (
+                                    <a key={idx} href={sim.url} target="_blank" onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave}
+                                        className={`block group relative overflow-hidden rounded-lg p-1 transition-transform hover:scale-[1.02] cursor-none ${sim.color === 'bg-red-600 hover:bg-red-500' ? 'shadow-[0_0_20px_rgba(220,38,38,0.4)]' : 'shadow-[0_0_20px_rgba(37,99,235,0.4)]'}`}>
+                                        <div className={`${sim.color} h-full w-full rounded p-4 flex justify-between items-center relative z-10`}>
+                                            <div>
+                                                <div className="text-[10px] text-white/80 tracking-widest font-mono mb-1">{sim.sub}</div>
+                                                <div className="text-xl font-black text-white italic tracking-tighter">{sim.title}</div>
+                                            </div>
+                                            <div className="bg-black/20 p-2 rounded-full group-hover:bg-black/40 transition-colors"><Zap size={24} className="text-white" /></div>
+                                        </div>
+                                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
 
-        // 懸停效果偵測
-        const hoverElements = document.querySelectorAll("[data-hover], a, button");
-        hoverElements.forEach(el => {
-            el.addEventListener("mouseenter", () => document.body.classList.add("hovering"));
-            el.addEventListener("mouseleave", () => document.body.classList.remove("hovering"));
-        });
+                        {/* 右側主控台 */}
+                        <div className="lg:col-span-8">
+                            {activeModule ? (
+                                <div className="h-full flex flex-col">
+                                    <button onClick={() => setActiveModule(null)} onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave} className="mb-4 flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors font-mono text-sm cursor-none w-fit">&lt; RETURN_TO_DASHBOARD</button>
+                                    <div className={`flex-1 bg-[#0a0a0a] border ${activeModule.borderColor} rounded-xl p-6 relative overflow-hidden`}>
+                                        <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-${activeModule.color.split('-')[1]}-900/20 to-transparent rounded-bl-full opacity-50 pointer-events-none`}></div>
+                                        <div className="relative z-10">
+                                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
+                                                <div className={`p-4 rounded-lg bg-gray-900 ${activeModule.color}`}>{activeModule.icon}</div>
+                                                <div><h2 className="text-3xl font-bold text-white">{activeModule.name}</h2><p className={`font-mono text-sm ${activeModule.color} opacity-80`}>{activeModule.sub}</p></div>
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                {activeModule.links.map((link, i) => (
+                                                    <a key={i} href={link.url} target="_blank" onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave} className={`group flex items-start gap-3 p-4 rounded bg-gray-900/40 border border-gray-800 hover:border-${activeModule.color.split('-')[1]}-500/50 transition-all hover:bg-gray-900/80 cursor-none`}>
+                                                        <div className="mt-1 text-gray-500 group-hover:text-white transition-colors"><ChevronRight size={16} /></div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2"><h4 className="text-gray-200 font-bold group-hover:text-white transition-colors">{link.title}</h4>{link.tag && <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[10px] rounded font-mono">{link.tag}</span>}</div>
+                                                            {link.type === 'external_highlight' && <p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><ExternalLink size={10} /> 外部專案連結</p>}
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full content-start">
+                                    <div className="md:col-span-2 mb-2"><h2 className="text-xl font-bold text-white flex items-center gap-2"><span className="w-1 h-6 bg-green-500 block"></span> COMMAND MODULES</h2></div>
+                                    {MODULES.map((mod) => (
+                                        <div key={mod.id} onClick={() => setActiveModule(mod)} onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave}
+                                            className={`group relative p-6 bg-[#0e0e0e] border border-gray-800 hover:border-${mod.color.split('-')[1]}-500 transition-all duration-200 rounded-lg cursor-none overflow-hidden hover-glitch ${mod.isHighlight ? 'md:col-span-2 border-red-900/60 bg-red-950/10' : ''}`}
+                                            style={{ '--hover-shadow': `0 0 30px ${mod.shadowColor || 'rgba(34, 197, 94, 0.2)'}` }}>
+                                            <div className={`absolute inset-0 bg-${mod.color.split('-')[1]}-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                                            <div className="relative z-10 flex items-start justify-between">
+                                                <div>
+                                                    <div className={`font-mono text-xs mb-2 ${mod.color} opacity-70`}>MODULE_{mod.id.toUpperCase()}</div>
+                                                    <h3 className="text-xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform">{mod.name}</h3>
+                                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2 h-10">{mod.description}</p>
+                                                </div>
+                                                <div className={`p-3 rounded bg-gray-900/50 ${mod.color} group-hover:scale-125 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>{mod.icon}</div>
+                                            </div>
+                                            <div className="mt-2 flex items-center gap-2 text-xs text-gray-600 font-mono group-hover:text-white transition-colors"><span>ACCESS DATA</span><ArrowRight size={12} className="group-hover:translate-x-2 transition-transform" /></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </main>
 
-        // ---------------------------------------------------
-        // 2. 3D 傾斜卡片效果 (3D Tilt Effect)
-        // ---------------------------------------------------
-        const cards = document.querySelectorAll(".card");
+                    <footer className="max-w-7xl mx-auto px-4 py-8 mt-8 border-t border-gray-900 text-center relative z-10">
+                        <p className="text-gray-600 text-sm font-mono">© 2025 CLIT CLASSROOM. SYSTEM STATUS: <span className="text-green-500">OPTIMAL</span>.</p>
+                        <div className="flex items-center justify-center gap-4 mt-4">
+                            <a href="https://github.com" target="_blank" className="text-gray-700 hover:text-white transition-colors flex items-center gap-2 cursor-none" onMouseEnter={cursorEnterLink} onMouseLeave={cursorLeave}>
+                                <Github size={16} /><span className="text-xs">SOURCE_CODE</span>
+                            </a>
+                        </div>
+                        <p className="text-gray-800 text-[10px] mt-2">Concept by Carey | Powered by Github Pages</p>
+                    </footer>
+                </div>
+            );
+        };
 
-        cards.forEach(card => {
-            card.addEventListener("mousemove", (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left; // 滑鼠在卡片內的 X 座標
-                const y = e.clientY - rect.top;  // 滑鼠在卡片內的 Y 座標
-
-                // 計算旋轉中心與角度
-                const xCenter = rect.width / 2;
-                const yCenter = rect.height / 2;
-                
-                // 數值 20 控制旋轉幅度，越大旋轉越小
-                const rotateX = ((y - yCenter) / yCenter) * -10; 
-                const rotateY = ((x - xCenter) / xCenter) * 10;
-
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-            });
-
-            // 滑鼠移出時復原
-            card.addEventListener("mouseleave", () => {
-                card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
-            });
-        });
-
-        // ---------------------------------------------------
-        // 3. 頁面載入動畫 (簡單的依序淡入)
-        // ---------------------------------------------------
-        window.addEventListener('load', () => {
-            const gridItems = document.querySelectorAll('.card');
-            gridItems.forEach((item, index) => {
-                item.style.opacity = '0';
-                item.style.animation = `bounce 0.5s ease forwards ${index * 0.1}s`;
-                // 這裡僅利用 CSS 既有的 keyframe 做簡單示範，實際可改用 fade-in
-                setTimeout(() => {
-                    item.style.opacity = '1';
-                    item.style.animation = 'none'; 
-                }, 500 + (index * 100));
-            });
-        });
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
-
-
-
