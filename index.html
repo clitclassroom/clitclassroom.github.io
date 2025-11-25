@@ -102,7 +102,7 @@
         const CORE_STATUS = {
             active: true,
             level: 'WARNING',
-            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 ///系統平台大冒險上線/// 114上資訊課程陸續更新中，請注意作業繳交期限。'
         };
 
         const MODULES = [
@@ -172,7 +172,7 @@
                 // 移除 isHighlight: true，讓它回復正常寬度，以便與指揮官模組並排
                 description: '惡意程式、資訊安全、網路安全、駭客挑戰', 
                 links: [
-                    { title: '惡意程式與資訊安全 (新版)', url: 'https://clitclassroom.github.io/malware/malware_security.html', type: 'external_highlight' },
+                    { title: '惡意程式與資訊安全 (新版)', url: 'https://clitclassroom.github.io/malware/malware_security.html', type: 'external_highlight' , tag: 'NEW'},
                     { title: '假訊息與假新聞', url: 'https://hackmd.io/@careylin73/fakenews' },
                     { title: 'AI 安全使用指南', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer/ai%E5%AE%89%E5%85%A8%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97' },
                 ]
@@ -183,7 +183,7 @@
                 icon: <User size={24} />, color: 'text-cyan-400', borderColor: 'border-cyan-400/50', shadowColor: 'rgba(34, 211, 238, 0.4)',
                 description: 'About Carey - 國中資訊科技教師',
                 links: [
-                    { title: 'Carey 的資訊科技教室', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', type: 'external_highlight' },
+                    { title: 'Carey 的資訊科技教室', url: 'https://sites.google.com/ttjhs.ntct.edu.tw/careycomputer', type: 'external_highlight' , tag: '舊站'},
                     { title: 'Carey@Youtube 頻道', url: 'https://www.youtube.com/@usercareyschannel' },
                     { title: 'Carey@Hackmd 筆記', url: 'https://hackmd.io/@careylin73' },
                 ]
@@ -413,6 +413,7 @@
     </script>
 </body>
 </html>
+
 
 
 
