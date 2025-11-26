@@ -1,6 +1,9 @@
 <!-- 
   Project: 數位核心戰情室 (Digital Core War Room)
-  Version: 2.0 (Enhanced Edition)
+  Version: 2.2 (Footer Update)
+  
+  [Update Log]
+  v2.2: Updated footer content to "CLIT Classroom" and added GitHub icon.
   
   [GitHub Deployment Instructions]
   1. Save this file as "index.html".
@@ -22,9 +25,6 @@
     <!-- 引入 FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-	<!-- 新增網站小圖示 -->
-    <link rel="icon" type="image/png" href="img/favicon.png">
-	
     <style>
         /* 全局變數與基礎設定 */
         :root {
@@ -40,7 +40,7 @@
             background-color: var(--bg-dark);
             color: #fff;
             overflow-x: hidden;
-            cursor: none; /* 隱藏預設滑鼠 */
+            cursor: none; /* 預設隱藏系統滑鼠 */
         }
 
         h1, h2, h3, .tech-font {
@@ -79,7 +79,7 @@
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 9999;
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            transition: width 0.2s, height 0.2s, background-color 0.2s, opacity 0.2s;
             mix-blend-mode: difference;
             box-shadow: 0 0 10px var(--neon-blue);
         }
@@ -96,16 +96,32 @@
             transform: translate(-50%, -50%);
         }
 
+        /* 當 body 有 .show-system-cursor class 時 (Modal 開啟時) */
+        body.show-system-cursor {
+            cursor: auto !important; /* 恢復系統滑鼠 */
+        }
+        
+        body.show-system-cursor #cursor {
+            opacity: 0 !important; /* 隱藏特效滑鼠 */
+        }
+
+        /* 在恢復系統滑鼠模式下，確保按鈕有手型游標 */
+        body.show-system-cursor button,
+        body.show-system-cursor a,
+        body.show-system-cursor .cursor-pointer {
+            cursor: pointer !important;
+        }
+
         body:hover #cursor {
             opacity: 1;
         }
         
-        /* 懸停時的滑鼠變化 */
-        .hover-target:hover ~ #cursor, 
-        button:hover ~ #cursor,
-        a:hover ~ #cursor,
-        .cursor-pointer:hover ~ #cursor,
-        .tech-card:hover ~ #cursor {
+        /* 懸停時的滑鼠變化 (僅在特效滑鼠模式下有效) */
+        body:not(.show-system-cursor) .hover-target:hover ~ #cursor, 
+        body:not(.show-system-cursor) button:hover ~ #cursor,
+        body:not(.show-system-cursor) a:hover ~ #cursor,
+        body:not(.show-system-cursor) .cursor-pointer:hover ~ #cursor,
+        body:not(.show-system-cursor) .tech-card:hover ~ #cursor {
             width: 60px;
             height: 60px;
             background-color: rgba(0, 243, 255, 0.1);
@@ -483,7 +499,7 @@
         <div class="modal-content w-11/12 md:w-2/3 max-w-2xl p-8 rounded-xl transform scale-95 transition-transform duration-300">
             <div class="scan-line"></div>
             <!-- 關閉按鈕 -->
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl cursor-none z-50">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-50">
                 <i class="fas fa-times"></i>
             </button>
             
@@ -503,8 +519,20 @@
         </div>
     </div>
 
-    <footer class="bg-gray-900 border-t border-gray-800 py-6 text-center text-gray-500 text-sm">
-        <p>數位核心戰情室 © 2025 | 國中資訊科技互動教材 (v2.0)</p>
+    <!-- 頁尾 (Updated Footer) -->
+    <footer class="bg-gray-900 border-t border-gray-800 py-8 text-center text-gray-500 text-sm relative z-10">
+        <div class="container mx-auto px-4 flex flex-col items-center justify-center space-y-3">
+            <!-- GitHub Icon (Decorative Link) -->
+            <a href="#" class="text-3xl text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110">
+                <i class="fab fa-github"></i>
+            </a>
+            
+            <!-- Text Content -->
+            <div class="flex flex-col space-y-1">
+                <p class="font-bold tracking-wide">© 2025 CLIT Classroom | 國中資訊科技</p>
+                <p class="text-xs text-gray-600">Content: System Platform</p>
+            </div>
+        </div>
     </footer>
 
     <!-- JavaScript 邏輯 -->
@@ -659,8 +687,13 @@
             document.getElementById('modal-icon').className = `${data.icon} text-3xl text-cyan-400 mr-4`;
             document.getElementById('modal-body').innerHTML = data.content;
 
+            // 1. 顯示 Modal
             modal.classList.remove('hidden');
-            // 小延遲讓 CSS transition 生效
+            
+            // 2. 恢復系統滑鼠
+            document.body.classList.add('show-system-cursor');
+
+            // 3. 執行動畫
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
@@ -669,10 +702,15 @@
         }
 
         function closeModal() {
+            // 1. 隱藏動畫
             modal.classList.add('opacity-0');
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-95');
             
+            // 2. 恢復特效滑鼠 (移除 class)
+            document.body.classList.remove('show-system-cursor');
+            
+            // 3. 隱藏 Modal
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
