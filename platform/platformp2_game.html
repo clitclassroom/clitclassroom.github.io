@@ -23,6 +23,7 @@
                     },
                     animation: {
                         'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
                     }
                 }
             }
@@ -102,6 +103,35 @@
             outline: none;
             background: rgba(6, 182, 212, 0.1);
         }
+
+        /* 勝利光芒特效 */
+        .victory-glow {
+            box-shadow: 0 0 50px rgba(234, 179, 8, 0.6);
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(234, 179, 8, 0.8), 0 0 20px rgba(255, 255, 255, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.4); }
+        }
+        
+        /* 背景光束旋轉 */
+        .god-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 255, 255, 0.05) 0deg 10deg,
+                transparent 10deg 20deg
+            );
+            transform: translate(-50%, -50%);
+            animation: spin-slow 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
     </style>
 </head>
 <body class="text-gray-200 h-screen w-screen flex flex-col">
@@ -144,12 +174,12 @@
             </div>
         </div>
 
-        <!-- 倒數計時遮罩 (新增) -->
+        <!-- 倒數計時遮罩 -->
         <div id="countdownLayer" class="hidden absolute inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
             <div id="countdownText" class="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 to-blue-600 orbitron drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]">5</div>
         </div>
 
-        <!-- 啟動畫面 (Start Screen) - 風格改為炫光藍 -->
+        <!-- 啟動畫面 (Start Screen) -->
         <div id="startScreen" class="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDQwaDQwVjBIMHY0MHptMjAtMjB2MjBoMjBWMjBIMjB6TTAgMjBoMjBWMHgyMFYwSDh6IiBmaWxsPSIjMDZiNmQ0IiBmaWxsLW9wYWNpdHk9IjAuMDUiLz48L2c+PC9zdmc+')] opacity-30 pointer-events-none"></div>
             
@@ -160,7 +190,6 @@
                 <h2 class="text-xl md:text-2xl text-cyan-400 orbitron tracking-[0.5em] mb-8 border-b border-cyan-500/50 pb-2">DEFENDER</h2>
                 
                 <div class="bg-gray-900/80 p-8 rounded-xl border border-cyan-500/50 backdrop-blur-md shadow-[0_0_30px_rgba(6,182,212,0.15)] w-full relative overflow-hidden mb-6">
-                    <!-- 裝飾光條 -->
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
 
@@ -187,9 +216,8 @@
             </div>
         </div>
 
-        <!-- 題目模態框 (Quiz Modal) - 縮小尺寸 -->
+        <!-- 題目模態框 (Quiz Modal) -->
         <div id="quizModal" class="hidden absolute inset-0 z-40 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md">
-            <!-- 修改：max-w-3xl 改為 max-w-lg，讓板塊變小 -->
             <div class="bg-gray-900 border border-cyan-500 rounded-lg max-w-lg w-full p-5 shadow-[0_0_40px_rgba(6,182,212,0.3)] modal-animate relative pointer-events-auto overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none"></div>
 
@@ -211,9 +239,12 @@
             </div>
         </div>
 
-        <!-- 結算畫面 (End Screen) -->
-        <div id="endScreen" class="hidden absolute inset-0 z-50 bg-[#0a0a0a] flex flex-col items-center justify-center p-4 overflow-y-auto">
-            <div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden my-auto">
+        <!-- 結算畫面 (End Screen) - 增加透明度以顯示後方煙火 -->
+        <div id="endScreen" class="hidden absolute inset-0 z-50 bg-black/85 flex flex-col items-center justify-center p-4 overflow-y-auto backdrop-blur-sm">
+            <!-- 背景光束特效 -->
+            <div class="god-rays"></div>
+
+            <div class="w-full max-w-md bg-gray-900/90 border border-gray-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden my-auto transform transition-all duration-500 scale-100">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500"></div>
 
                 <div class="text-center mb-4">
@@ -221,12 +252,15 @@
                     <p class="text-gray-500 text-xs mt-1">SYSTEM_DEFENSE_LOG</p>
                 </div>
 
-                <div class="flex flex-col items-center mb-6">
-                    <div id="rankBadge" class="w-24 h-24 rounded-full border-4 border-yellow-400 flex items-center justify-center text-5xl font-black text-yellow-400 orbitron shadow-[0_0_20px_rgba(234,179,8,0.4)] bg-gray-800">S</div>
-                    <div class="mt-3 text-lg font-bold text-white">
+                <div class="flex flex-col items-center mb-6 relative">
+                    <!-- 徽章光暈 -->
+                    <div id="rankBadgeGlow" class="absolute inset-0 rounded-full blur-xl opacity-50 transform scale-150"></div>
+                    
+                    <div id="rankBadge" class="w-24 h-24 rounded-full border-4 border-yellow-400 flex items-center justify-center text-5xl font-black text-yellow-400 orbitron shadow-[0_0_20px_rgba(234,179,8,0.4)] bg-gray-800 relative z-10">S</div>
+                    <div class="mt-3 text-lg font-bold text-white relative z-10">
                         <span id="endPlayerName" class="text-cyan-400">Unknown</span>
                     </div>
-                    <p id="endMessage" class="text-gray-400 mt-1 text-center text-xs">系統防禦成功。</p>
+                    <p id="endMessage" class="text-gray-400 mt-1 text-center text-xs relative z-10">系統防禦成功。</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
@@ -240,7 +274,7 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 relative z-20">
                     <button onclick="location.reload()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold text-sm shadow-lg flex items-center justify-center">
                         <i class="fas fa-redo mr-2"></i> REPLAY
                     </button>
@@ -251,11 +285,11 @@
             </div>
         </div>
 
-        <!-- 遊戲核心畫布 (絕對定位於 main 內) -->
+        <!-- 遊戲核心畫布 -->
         <canvas id="gameCanvas" class="absolute inset-0 z-0 block"></canvas>
     </main>
 
-    <!-- Footer (縮小高度，確保不固定) -->
+    <!-- Footer -->
     <footer class="w-full bg-gray-900 border-t border-gray-800 py-3 text-center text-gray-500 text-[10px] md:text-xs relative z-40 flex-shrink-0">
         <div class="container mx-auto px-4 flex flex-col items-center justify-center space-y-1">
             <a href="https://github.com/clitclassroom" target="_blank" class="text-xl text-gray-400 hover:text-white transition-colors duration-300">
@@ -273,7 +307,7 @@
             totalQuestions: 10,
             timeLimit: 300,
             baseScore: 100,
-            penaltyScore: 50, // 扣分值
+            penaltyScore: 50,
             chestThreshold: 3, 
             enemySpawnRate: 50,
         };
@@ -365,6 +399,7 @@
         let gameState = {
             active: false,
             paused: false,
+            gameWon: false, // 新增：勝利狀態
             playerName: "Unknown",
             score: 0,
             timeLeft: GAME_CONFIG.timeLimit,
@@ -373,9 +408,8 @@
             correctCount: 0,
             questions: [],
             enemies: [],
-            particles: [],
+            particles: [], // 包含爆炸與煙火
             bullets: [],
-            floatingTexts: [], // 浮動文字
             player: { x: 0, y: 0, w: 50, h: 60 },
             enemyKillCount: 0,
             nextGateThreshold: 5,
@@ -383,52 +417,62 @@
         };
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        function playTone(freq, time, duration, type='sine', vol=0.1) {
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, time);
+            
+            gainNode.gain.setValueAtTime(vol, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            
+            osc.start(time);
+            osc.stop(time + duration);
+        }
 
+        // 播放勝利音效 (Fanfare)
+        function playVictoryMusic() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            // 旋律: C4, E4, G4, C5 (C Major Arpeggio) + 高音長音
+            const notes = [
+                { f: 523.25, d: 0.15, t: 0 },    // C4
+                { f: 659.25, d: 0.15, t: 0.15 }, // E4
+                { f: 783.99, d: 0.15, t: 0.3 },  // G4
+                { f: 1046.50, d: 0.4, t: 0.45 }, // C5
+                { f: 783.99, d: 0.1, t: 0.85 },  // G4 (dip)
+                { f: 1046.50, d: 1.5, t: 0.95 }  // C5 (Hold)
+            ];
+
+            notes.forEach(n => {
+                // 主旋律
+                playTone(n.f, now + n.t, n.d, 'triangle', 0.15);
+                // 和聲 (低八度)
+                playTone(n.f / 2, now + n.t, n.d, 'sawtooth', 0.05);
+            });
+        }
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const t = audioCtx.currentTime;
             
             if (type === 'shoot') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, t);
-                osc.frequency.exponentialRampToValueAtTime(100, t + 0.15);
-                gainNode.gain.setValueAtTime(0.05, t);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-                osc.start(t);
-                osc.stop(t + 0.15);
+                playTone(800, t, 0.15, 'sawtooth', 0.05);
             } else if (type === 'hit') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, t);
-                osc.frequency.linearRampToValueAtTime(50, t + 0.1);
-                gainNode.gain.setValueAtTime(0.1, t);
-                gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
-                osc.start(t);
-                osc.stop(t + 0.1);
+                playTone(150, t, 0.1, 'square', 0.1);
             } else if (type === 'correct') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, t);
-                osc.frequency.linearRampToValueAtTime(800, t + 0.1);
-                osc.frequency.linearRampToValueAtTime(1200, t + 0.2);
-                gainNode.gain.setValueAtTime(0.1, t);
-                gainNode.gain.linearRampToValueAtTime(0, t + 0.4);
-                osc.start(t);
-                osc.stop(t + 0.4);
+                playTone(400, t, 0.1, 'sine', 0.1);
+                setTimeout(() => playTone(800, audioCtx.currentTime, 0.2, 'sine', 0.1), 100);
             } else if (type === 'wrong') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, t);
-                osc.frequency.linearRampToValueAtTime(80, t + 0.3);
-                gainNode.gain.setValueAtTime(0.2, t);
-                gainNode.gain.linearRampToValueAtTime(0, t + 0.3);
-                osc.start(t);
-                osc.stop(t + 0.3);
+                playTone(100, t, 0.3, 'sawtooth', 0.2);
             }
         }
 
-        // 初始化與響應式
         function resize() {
             canvas.width = gameContainer.clientWidth;
             canvas.height = gameContainer.clientHeight;
@@ -443,15 +487,30 @@
         window.addEventListener('resize', resize);
 
         function gameLoop() {
-            if (!gameState.active || gameState.paused) return;
+            // 如果遊戲進行中，或者遊戲已勝利(需要播放煙火)，則繼續迴圈
+            if ((!gameState.active && !gameState.gameWon) || gameState.paused) {
+                if(!gameState.gameWon) return; // 只有非勝利狀態的停止才真的停止
+            }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             gameState.frame++;
             
             drawBackground();
-            updatePlayer();
-            updateBullets();
-            updateEnemies();
+            
+            if (gameState.active) {
+                updatePlayer();
+                updateBullets();
+                updateEnemies();
+            } else if (gameState.gameWon) {
+                // 勝利模式：自動施放煙火
+                if (Math.random() < 0.05) {
+                    createFirework(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height / 2 + 50
+                    );
+                }
+            }
+
             updateParticles();
             updateFloatingTexts();
 
@@ -484,11 +543,9 @@
 
         function updatePlayer() {
             const { x, y, w, h } = gameState.player;
-            
             ctx.save();
             ctx.translate(x, y);
             
-            // 戰機噴射火焰
             const flameLen = Math.random() * 20 + 10;
             ctx.beginPath();
             ctx.moveTo(-10, h/2);
@@ -497,7 +554,6 @@
             ctx.fillStyle = '#06b6d4';
             ctx.fill();
             
-            // 戰機本體
             ctx.beginPath();
             ctx.moveTo(0, -h/2); 
             ctx.lineTo(w/2, h/4); 
@@ -509,11 +565,10 @@
             
             ctx.fillStyle = '#111827';
             ctx.fill();
-            ctx.strokeStyle = '#06b6d4'; // 炫光藍邊框
+            ctx.strokeStyle = '#06b6d4';
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // 駕駛艙
             ctx.beginPath();
             ctx.moveTo(0, -h/6);
             ctx.lineTo(5, 0);
@@ -522,7 +577,6 @@
             ctx.closePath();
             ctx.fillStyle = '#22d3ee';
             ctx.fill();
-
             ctx.restore();
         }
 
@@ -530,13 +584,11 @@
             for (let i = gameState.bullets.length - 1; i >= 0; i--) {
                 let b = gameState.bullets[i];
                 b.y -= 15;
-                
                 ctx.fillStyle = '#22d3ee';
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#22d3ee';
                 ctx.fillRect(b.x - 3, b.y, 6, 20);
                 ctx.shadowBlur = 0;
-
                 if (b.y < 0) gameState.bullets.splice(i, 1);
             }
         }
@@ -605,6 +657,7 @@
             }
         }
 
+        // 普通爆炸
         function createExplosion(x, y, color) {
             for(let i=0; i<15; i++) {
                 gameState.particles.push({
@@ -613,7 +666,28 @@
                     vy: (Math.random() - 0.5) * 8,
                     life: 1,
                     color: color,
-                    size: Math.random() * 4 + 2
+                    size: Math.random() * 4 + 2,
+                    gravity: 0
+                });
+            }
+        }
+
+        // 煙火特效
+        function createFirework(x, y) {
+            const colors = ['#f472b6', '#34d399', '#60a5fa', '#facc15', '#a78bfa'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            for(let i=0; i<30; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                gameState.particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1.5,
+                    color: color,
+                    size: Math.random() * 3 + 2,
+                    gravity: 0.1 // 煙火受重力影響
                 });
             }
         }
@@ -623,7 +697,8 @@
                 let p = gameState.particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.life -= 0.04;
+                if(p.gravity) p.vy += p.gravity; // 重力效果
+                p.life -= 0.02;
                 
                 ctx.fillStyle = p.color;
                 ctx.globalAlpha = p.life;
@@ -634,7 +709,6 @@
             ctx.globalAlpha = 1;
         }
 
-        // 新增：更新浮動文字
         function showFloatingText(x, y, text, color) {
             const el = document.createElement('div');
             el.className = 'fixed text-2xl font-bold float-text pointer-events-none orbitron';
@@ -646,9 +720,7 @@
             setTimeout(() => el.remove(), 1000);
         }
 
-        function updateFloatingTexts() {
-            // 目前使用 CSS Animation 處理浮動文字，這裡預留空函式
-        }
+        function updateFloatingTexts() {}
 
         function checkGateTrigger() {
             if (gameState.enemyKillCount >= gameState.nextGateThreshold) {
@@ -684,7 +756,6 @@
             }
         }
 
-        // 新增：遊戲初始化序列 (包含倒數)
         function initGameSequence() {
             const nameInput = document.getElementById('playerNameInput');
             const name = nameInput.value.trim() || "Agent 007";
@@ -695,8 +766,6 @@
             document.getElementById('ui-layer').classList.remove('hidden');
             
             resize();
-            
-            // 啟動倒數
             startCountdown();
         }
 
@@ -712,7 +781,6 @@
                 count--;
                 if(count > 0) {
                     text.textContent = count;
-                    // 重置動畫以觸發效果
                     text.classList.remove('countdown-num');
                     void text.offsetWidth;
                     text.classList.add('countdown-num');
@@ -732,6 +800,7 @@
             
             gameState.active = true;
             gameState.paused = false;
+            gameState.gameWon = false;
             gameState.score = 0;
             gameState.timeLeft = GAME_CONFIG.timeLimit;
             gameState.currentQIndex = 0;
@@ -744,7 +813,6 @@
             document.getElementById('endScreen').classList.add('hidden');
             updateUI();
             
-            // 啟動計時器 (修正：確保只有一個計時器在運行)
             if(window.gameTimer) clearInterval(window.gameTimer);
             window.gameTimer = setInterval(() => {
                 if (gameState.active && !gameState.paused && gameState.timeLeft > 0) {
@@ -819,9 +887,8 @@
                 feedback.innerHTML = "<i class='fas fa-exclamation-triangle mr-2'></i> ACCESS DENIED (-50 PTS)";
                 feedback.className = "mt-3 text-center font-bold p-2 rounded bg-red-900/80 text-red-400 border border-red-500 backdrop-blur-sm";
                 
-                // 扣分機制
                 gameState.score = Math.max(0, gameState.score - GAME_CONFIG.penaltyScore);
-                showFloatingText(window.innerWidth / 2, window.innerHeight / 2, "-50", "#ef4444"); // 紅色扣分
+                showFloatingText(window.innerWidth / 2, window.innerHeight / 2, "-50", "#ef4444");
                 
                 gameState.streak = 0;
             }
@@ -878,45 +945,59 @@
         function endGame() {
             gameState.active = false;
             gameState.paused = true;
-            clearInterval(window.gameTimer); // 停止計時
+            gameState.gameWon = true; // 設置為勝利狀態，觸發煙火
+
+            clearInterval(window.gameTimer);
             document.getElementById('ui-layer').classList.add('hidden');
             document.getElementById('quizModal').classList.add('hidden');
             document.getElementById('endScreen').classList.remove('hidden');
 
             const timeBonus = gameState.timeLeft; 
             const finalScore = gameState.score + timeBonus;
-            
             const accuracy = Math.round((gameState.correctCount / GAME_CONFIG.totalQuestions) * 100);
 
             document.getElementById('endPlayerName').textContent = gameState.playerName;
             document.getElementById('finalScore').textContent = finalScore;
-            // document.getElementById('finalTime').textContent = `+${timeBonus}`; // 簡化畫面
             document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
             
             const rankBadge = document.getElementById('rankBadge');
+            const rankBadgeGlow = document.getElementById('rankBadgeGlow');
             const msg = document.getElementById('endMessage');
+            
+            let colorClass = '';
             
             if (finalScore >= 1200) {
                 rankBadge.textContent = 'S';
                 rankBadge.style.borderColor = '#eab308';
                 rankBadge.style.color = '#eab308';
+                rankBadgeGlow.style.backgroundColor = '#eab308';
                 msg.textContent = "傳奇指揮官！系統核心完美防禦！";
+                playVictoryMusic(); // 播放勝利音樂
             } else if (finalScore >= 900) {
                 rankBadge.textContent = 'A';
                 rankBadge.style.borderColor = '#22c55e';
                 rankBadge.style.color = '#22c55e';
+                rankBadgeGlow.style.backgroundColor = '#22c55e';
                 msg.textContent = "優秀操作員！威脅已清除。";
+                playVictoryMusic();
             } else if (finalScore >= 600) {
                 rankBadge.textContent = 'B';
                 rankBadge.style.borderColor = '#3b82f6';
                 rankBadge.style.color = '#3b82f6';
+                rankBadgeGlow.style.backgroundColor = '#3b82f6';
                 msg.textContent = "任務完成，建議加強訓練。";
+                playSound('correct');
             } else {
                 rankBadge.textContent = 'C';
                 rankBadge.style.borderColor = '#9ca3af';
                 rankBadge.style.color = '#9ca3af';
+                rankBadgeGlow.style.backgroundColor = '#9ca3af';
                 msg.textContent = "防禦失敗，請重新複習課程檔案。";
+                playSound('wrong');
             }
+            
+            // 讓徽章添加呼吸燈特效
+            rankBadge.classList.add('victory-glow');
         }
     </script>
 </body>
