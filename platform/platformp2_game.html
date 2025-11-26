@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cyber Core Defender | 核心保衛戰</title>
+    <meta name="description" content="互動式學習闖關遊戲 - 系統平臺與電腦發展史">
+
+    <!-- 新增網站小圖示 -->
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            blue: '#06b6d4', // 炫光藍基調 (Cyan-500)
+                            dark: '#080808',
+                        }
+                    },
+                    animation: {
+                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #050505;
+            overflow: hidden; /* 防止整體頁面捲動 */
+            touch-action: none; /* 防止手機觸控拖曳 */
+        }
+        
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        /* 霓虹特效 */
+        .neon-blue {
+            text-shadow: 0 0 5px #06b6d4, 0 0 10px #06b6d4;
+        }
+        .neon-border-blue {
+            box-shadow: 0 0 10px #06b6d4, inset 0 0 5px #06b6d4;
+            border: 1px solid #06b6d4;
+        }
+        
+        /* 遊戲畫布 */
+        #gameCanvas {
+            background: radial-gradient(circle at center, #0f172a 0%, #000000 100%);
+            cursor: none; /* 隱藏滑鼠游標 */
+        }
+
+        /* 模態框動畫 */
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-animate {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        /* 浮動文字動畫 (加分/扣分) */
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+        .float-text {
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        /* 倒數計時動畫 */
+        @keyframes countZoom {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .countdown-num {
+            animation: countZoom 1s ease-out forwards;
+        }
+
+        /* 輸入框樣式 */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #06b6d4;
+            color: #06b6d4;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .cyber-input:focus {
+            box-shadow: 0 0 15px #06b6d4;
+            outline: none;
+            background: rgba(6, 182, 212, 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-200 h-screen w-screen flex flex-col">
+
+    <!-- 主要遊戲區域 (佔據剩餘空間) -->
+    <main id="game-container" class="flex-grow relative w-full overflow-hidden flex flex-col">
+        
+        <!-- 遊戲 UI 層 -->
+        <div id="ui-layer" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 z-20 hidden">
+            <!-- 頂部資訊列 -->
+            <div class="flex justify-between items-start">
+                <div class="bg-black/80 p-2 rounded border border-cyan-500 neon-border-blue backdrop-blur-sm min-w-[120px]">
+                    <div class="text-xs text-cyan-400 orbitron">AGENT</div>
+                    <div id="playerNameDisplay" class="text-sm font-bold text-white truncate max-w-[100px]">PLAYER</div>
+                    <div class="text-xs text-cyan-400 orbitron mt-1">SCORE</div>
+                    <div id="scoreDisplay" class="text-xl font-bold text-white orbitron">0</div>
+                </div>
+                
+                <div class="flex flex-col items-center bg-black/50 p-2 rounded-b-lg border-b border-x border-red-500/30">
+                     <div class="text-red-500 font-bold orbitron text-2xl" id="timerDisplay">05:00</div>
+                     <div class="text-xs text-gray-400 mt-1 tracking-widest">TIME</div>
+                </div>
+
+                <div class="bg-black/80 p-2 rounded border border-blue-500 backdrop-blur-sm shadow-[0_0_10px_#3b82f6] min-w-[100px] text-right">
+                    <div class="text-xs text-blue-400 orbitron">PROGRESS</div>
+                    <div id="progressDisplay" class="text-xl font-bold text-white orbitron">0 / 10</div>
+                </div>
+            </div>
+
+            <!-- 底部能量條 -->
+            <div class="w-full max-w-md mx-auto mb-2">
+                <div class="flex justify-between text-xs text-cyan-400 mb-1 orbitron">
+                    <span>STREAK: <span id="streakDisplay">0</span></span>
+                    <span id="streakBonusText" class="hidden text-yellow-400 font-bold drop-shadow-md">COMBO!</span>
+                </div>
+                <div class="h-2 w-full bg-gray-900 rounded-full overflow-hidden border border-gray-700 relative">
+                    <div class="absolute inset-0 w-full h-full" style="background-image: linear-gradient(90deg, transparent 32%, rgba(255,255,255,0.1) 33%); background-size: 33.3% 100%;"></div>
+                    <div id="streakBar" class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-300 shadow-[0_0_10px_#eab308]" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 倒數計時遮罩 (新增) -->
+        <div id="countdownLayer" class="hidden absolute inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
+            <div id="countdownText" class="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 to-blue-600 orbitron drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]">5</div>
+        </div>
+
+        <!-- 啟動畫面 (Start Screen) - 風格改為炫光藍 -->
+        <div id="startScreen" class="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDQwaDQwVjBIMHY0MHptMjAtMjB2MjBoMjBWMjBIMjB6TTAgMjBoMjBWMHgyMFYwSDh6IiBmaWxsPSIjMDZiNmQ0IiBmaWxsLW9wYWNpdHk9IjAuMDUiLz48L2c+PC9zdmc+')] opacity-30 pointer-events-none"></div>
+            
+            <div class="relative z-10 w-full max-w-xl flex flex-col items-center">
+                <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 orbitron mb-2 filter drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
+                    CYBER CORE
+                </h1>
+                <h2 class="text-xl md:text-2xl text-cyan-400 orbitron tracking-[0.5em] mb-8 border-b border-cyan-500/50 pb-2">DEFENDER</h2>
+                
+                <div class="bg-gray-900/80 p-8 rounded-xl border border-cyan-500/50 backdrop-blur-md shadow-[0_0_30px_rgba(6,182,212,0.15)] w-full relative overflow-hidden mb-6">
+                    <!-- 裝飾光條 -->
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+
+                    <p class="text-gray-300 mb-6 leading-relaxed text-sm md:text-base">
+                        指揮官，核心資料庫遭到病毒入侵。<br>
+                        請輸入您的代號以啟動防衛系統。
+                    </p>
+                    
+                    <div class="mb-8">
+                        <input type="text" id="playerNameInput" placeholder="輸入玩家姓名 / 代號" maxlength="10" 
+                            class="w-full px-4 py-3 text-xl rounded cyber-input placeholder-gray-600">
+                    </div>
+
+                    <button onclick="initGameSequence()" class="w-full group relative px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xl rounded overflow-hidden transition-all duration-200 transform hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                        <span class="orbitron relative z-10">INITIALIZE SYSTEM</span>
+                        <div class="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent transform skew-x-12 transition-all duration-700 group-hover:left-[100%]"></div>
+                    </button>
+                </div>
+                
+                <div class="text-xs text-gray-500 flex gap-4">
+                    <span><i class="fas fa-mouse mr-1"></i>滑鼠/觸控移動</span>
+                    <span><i class="fas fa-crosshairs mr-1"></i>點擊射擊</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 題目模態框 (Quiz Modal) - 縮小尺寸 -->
+        <div id="quizModal" class="hidden absolute inset-0 z-40 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md">
+            <!-- 修改：max-w-3xl 改為 max-w-lg，讓板塊變小 -->
+            <div class="bg-gray-900 border border-cyan-500 rounded-lg max-w-lg w-full p-5 shadow-[0_0_40px_rgba(6,182,212,0.3)] modal-animate relative pointer-events-auto overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none"></div>
+
+                <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2 relative z-10">
+                    <h3 class="text-lg font-bold text-cyan-400 orbitron flex items-center">
+                        <i class="fas fa-shield-alt mr-2 animate-pulse"></i>
+                        GATE <span id="qNum" class="ml-2 text-white">01</span>
+                    </h3>
+                    <div class="text-[10px] text-gray-400 orbitron">DECRYPTION REQUIRED</div>
+                </div>
+
+                <p id="questionText" class="text-lg text-white font-medium mb-6 leading-relaxed relative z-10 min-h-[3rem] flex items-center">
+                    題目載入中...
+                </p>
+
+                <div id="optionsGrid" class="grid grid-cols-1 gap-2 relative z-10"></div>
+                
+                <div id="feedbackMsg" class="hidden mt-3 text-center font-bold p-2 text-sm rounded relative z-10"></div>
+            </div>
+        </div>
+
+        <!-- 結算畫面 (End Screen) -->
+        <div id="endScreen" class="hidden absolute inset-0 z-50 bg-[#0a0a0a] flex flex-col items-center justify-center p-4 overflow-y-auto">
+            <div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden my-auto">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500"></div>
+
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-bold text-white orbitron tracking-wider">MISSION REPORT</h2>
+                    <p class="text-gray-500 text-xs mt-1">SYSTEM_DEFENSE_LOG</p>
+                </div>
+
+                <div class="flex flex-col items-center mb-6">
+                    <div id="rankBadge" class="w-24 h-24 rounded-full border-4 border-yellow-400 flex items-center justify-center text-5xl font-black text-yellow-400 orbitron shadow-[0_0_20px_rgba(234,179,8,0.4)] bg-gray-800">S</div>
+                    <div class="mt-3 text-lg font-bold text-white">
+                        <span id="endPlayerName" class="text-cyan-400">Unknown</span>
+                    </div>
+                    <p id="endMessage" class="text-gray-400 mt-1 text-center text-xs">系統防禦成功。</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
+                    <div class="bg-gray-800/50 p-2 rounded border border-gray-700 text-center">
+                        <div class="text-gray-500 text-[10px]">FINAL SCORE</div>
+                        <div id="finalScore" class="text-xl font-bold text-cyan-400 orbitron">0</div>
+                    </div>
+                    <div class="bg-gray-800/50 p-2 rounded border border-gray-700 text-center">
+                        <div class="text-gray-500 text-[10px]">ACCURACY</div>
+                        <div id="finalAccuracy" class="text-xl font-bold text-blue-400 orbitron">0%</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <button onclick="location.reload()" class="w-full py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold text-sm shadow-lg flex items-center justify-center">
+                        <i class="fas fa-redo mr-2"></i> REPLAY
+                    </button>
+                    <a href="https://clitclassroom.github.io/platform/platformP2.html" class="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded text-white font-bold text-sm text-center flex items-center justify-center">
+                        <i class="fas fa-sign-out-alt mr-2"></i> EXIT
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遊戲核心畫布 (絕對定位於 main 內) -->
+        <canvas id="gameCanvas" class="absolute inset-0 z-0 block"></canvas>
+    </main>
+
+    <!-- Footer (縮小高度，確保不固定) -->
+    <footer class="w-full bg-gray-900 border-t border-gray-800 py-3 text-center text-gray-500 text-[10px] md:text-xs relative z-40 flex-shrink-0">
+        <div class="container mx-auto px-4 flex flex-col items-center justify-center space-y-1">
+            <a href="https://github.com/clitclassroom" target="_blank" class="text-xl text-gray-400 hover:text-white transition-colors duration-300">
+                <i class="fab fa-github"></i>
+            </a>
+            <p class="font-bold tracking-wide">© 2025 CLIT Classroom | 國中資訊科技</p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * 遊戲設定
+         */
+        const GAME_CONFIG = {
+            totalQuestions: 10,
+            timeLimit: 300,
+            baseScore: 100,
+            penaltyScore: 50, // 扣分值
+            chestThreshold: 3, 
+            enemySpawnRate: 50,
+        };
+
+        const QUESTION_POOL = [
+            {
+                q: "世界上第一部數位電腦 ENIAC 是使用哪種電子元件組成的？",
+                options: ["電晶體", "真空管", "積體電路", "生物晶片"],
+                ans: 1
+            },
+            {
+                q: "第二代電腦開始使用「電晶體」，相較於真空管有何優點？",
+                options: ["體積小、省電", "運算速度變慢", "體積更大", "容易過熱"],
+                ans: 0
+            },
+            {
+                q: "CPU (中央處理器) 主要由哪兩個單元組成？",
+                options: ["輸入與輸出單元", "記憶與儲存單元", "控制與算術邏輯單元", "顯示與音效單元"],
+                ans: 2
+            },
+            {
+                q: "關於「多核心處理器」的敘述，何者正確？",
+                options: ["只能執行單一指令", "單晶片裝載多個CPU核心", "耗電量一定是兩倍", "已被雲端取代"],
+                ans: 1
+            },
+            {
+                q: "下列哪一個作業系統強調「開放原始碼」，任何人都能自由修改？",
+                options: ["Windows", "macOS", "Linux", "iOS"],
+                ans: 2
+            },
+            {
+                q: "適合一般使用者，市佔率最高且支援大量軟硬體的作業系統是？",
+                options: ["Windows", "Linux", "Unix", "FreeBSD"],
+                ans: 0
+            },
+            {
+                q: "macOS 作業系統最常被哪一類專業人士使用？",
+                options: ["伺服器架設者", "藝術與設計工作者", "電競選手", "政府機關"],
+                ans: 1
+            },
+            {
+                q: "由臺灣開發，專為教育使用設計的 Linux 版本是？",
+                options: ["Ubuntu", "CentOS", "RedHat", "ezgo"],
+                ans: 3
+            },
+            {
+                q: "人工智慧 (AI) 的發展基礎，主要依靠什麼進行分析？",
+                options: ["真空管", "大數據 (Big Data)", "單核心 CPU", "類比訊號"],
+                ans: 1
+            },
+            {
+                q: "手機常見的 Android 系統，其核心是修改自哪個系統？",
+                options: ["Windows", "iOS", "Linux", "DOS"],
+                ans: 2
+            },
+            {
+                q: "第三代電腦使用什麼元件取代了電晶體？",
+                options: ["積體電路 (IC)", "超大型積體電路", "量子位元", "真空管"],
+                ans: 0
+            },
+            {
+                q: "如果想架設穩定的伺服器，通常推薦使用哪個 Linux 版本？",
+                options: ["Windows 95", "CentOS", "macOS", "Android"],
+                ans: 1
+            },
+            {
+                q: "電腦軟體中，「Word」、「小畫家」屬於哪一類？",
+                options: ["系統軟體", "應用軟體", "韌體", "惡意軟體"],
+                ans: 1
+            },
+            {
+                q: "第一代電腦 ENIAC 的重量大約是多少？",
+                options: ["30 公斤", "300 公斤", "3 噸", "30 噸"],
+                ans: 3
+            },
+            {
+                q: "摩爾定律與哪個硬體元件的發展最相關？",
+                options: ["鍵盤", "螢幕", "積體電路", "滑鼠"],
+                ans: 2
+            }
+        ];
+
+        // --- 遊戲引擎與邏輯 ---
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameContainer = document.getElementById('game-container');
+        
+        let gameState = {
+            active: false,
+            paused: false,
+            playerName: "Unknown",
+            score: 0,
+            timeLeft: GAME_CONFIG.timeLimit,
+            currentQIndex: 0,
+            streak: 0,
+            correctCount: 0,
+            questions: [],
+            enemies: [],
+            particles: [],
+            bullets: [],
+            floatingTexts: [], // 浮動文字
+            player: { x: 0, y: 0, w: 50, h: 60 },
+            enemyKillCount: 0,
+            nextGateThreshold: 5,
+            frame: 0
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const t = audioCtx.currentTime;
+            
+            if (type === 'shoot') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.15);
+                gainNode.gain.setValueAtTime(0.05, t);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                osc.start(t);
+                osc.stop(t + 0.15);
+            } else if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, t);
+                osc.frequency.linearRampToValueAtTime(50, t + 0.1);
+                gainNode.gain.setValueAtTime(0.1, t);
+                gainNode.gain.linearRampToValueAtTime(0, t + 0.1);
+                osc.start(t);
+                osc.stop(t + 0.1);
+            } else if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, t);
+                osc.frequency.linearRampToValueAtTime(800, t + 0.1);
+                osc.frequency.linearRampToValueAtTime(1200, t + 0.2);
+                gainNode.gain.setValueAtTime(0.1, t);
+                gainNode.gain.linearRampToValueAtTime(0, t + 0.4);
+                osc.start(t);
+                osc.stop(t + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, t);
+                osc.frequency.linearRampToValueAtTime(80, t + 0.3);
+                gainNode.gain.setValueAtTime(0.2, t);
+                gainNode.gain.linearRampToValueAtTime(0, t + 0.3);
+                osc.start(t);
+                osc.stop(t + 0.3);
+            }
+        }
+
+        // 初始化與響應式
+        function resize() {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            if (gameState.active) {
+                gameState.player.y = canvas.height - 100;
+                if (gameState.player.x > canvas.width) gameState.player.x = canvas.width - 50;
+            } else {
+                 gameState.player.y = canvas.height - 100;
+                 gameState.player.x = canvas.width / 2;
+            }
+        }
+        window.addEventListener('resize', resize);
+
+        function gameLoop() {
+            if (!gameState.active || gameState.paused) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            gameState.frame++;
+            
+            drawBackground();
+            updatePlayer();
+            updateBullets();
+            updateEnemies();
+            updateParticles();
+            updateFloatingTexts();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        const stars = Array(150).fill().map(() => ({
+            x: Math.random() * 2000, 
+            y: Math.random() * 2000,
+            size: Math.random() * 2,
+            speed: Math.random() * 3 + 0.5,
+            color: Math.random() > 0.9 ? '#06b6d4' : '#ffffff'
+        }));
+
+        function drawBackground() {
+            stars.forEach(star => {
+                star.y += star.speed;
+                if(star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width; 
+                }
+                ctx.fillStyle = star.color;
+                ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+                ctx.beginPath();
+                ctx.arc(star.x % canvas.width, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function updatePlayer() {
+            const { x, y, w, h } = gameState.player;
+            
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // 戰機噴射火焰
+            const flameLen = Math.random() * 20 + 10;
+            ctx.beginPath();
+            ctx.moveTo(-10, h/2);
+            ctx.lineTo(0, h/2 + flameLen);
+            ctx.lineTo(10, h/2);
+            ctx.fillStyle = '#06b6d4';
+            ctx.fill();
+            
+            // 戰機本體
+            ctx.beginPath();
+            ctx.moveTo(0, -h/2); 
+            ctx.lineTo(w/2, h/4); 
+            ctx.lineTo(w/4, h/2); 
+            ctx.lineTo(0, h/3);   
+            ctx.lineTo(-w/4, h/2); 
+            ctx.lineTo(-w/2, h/4); 
+            ctx.closePath();
+            
+            ctx.fillStyle = '#111827';
+            ctx.fill();
+            ctx.strokeStyle = '#06b6d4'; // 炫光藍邊框
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 駕駛艙
+            ctx.beginPath();
+            ctx.moveTo(0, -h/6);
+            ctx.lineTo(5, 0);
+            ctx.lineTo(0, 5);
+            ctx.lineTo(-5, 0);
+            ctx.closePath();
+            ctx.fillStyle = '#22d3ee';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function updateBullets() {
+            for (let i = gameState.bullets.length - 1; i >= 0; i--) {
+                let b = gameState.bullets[i];
+                b.y -= 15;
+                
+                ctx.fillStyle = '#22d3ee';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#22d3ee';
+                ctx.fillRect(b.x - 3, b.y, 6, 20);
+                ctx.shadowBlur = 0;
+
+                if (b.y < 0) gameState.bullets.splice(i, 1);
+            }
+        }
+
+        function updateEnemies() {
+            if (Math.random() < 0.03 && gameState.enemies.length < 6) {
+                gameState.enemies.push({
+                    x: Math.random() * (canvas.width - 60) + 30,
+                    y: -50,
+                    size: 40,
+                    speed: Math.random() * 2 + 1.5,
+                    angle: 0,
+                    spinSpeed: (Math.random() - 0.5) * 0.2,
+                    color: Math.random() > 0.5 ? '#ff003c' : '#bd00ff'
+                });
+            }
+
+            for (let i = gameState.enemies.length - 1; i >= 0; i--) {
+                let e = gameState.enemies[i];
+                e.y += e.speed;
+                e.angle += e.spinSpeed;
+                
+                ctx.save();
+                ctx.translate(e.x, e.y);
+                ctx.rotate(e.angle);
+                
+                ctx.strokeStyle = e.color;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = e.color;
+                
+                ctx.beginPath();
+                for(let j=0; j<6; j++) {
+                    const rad = (Math.PI * 2 / 6) * j;
+                    const r = e.size/2 * (j%2===0 ? 1 : 0.6); 
+                    ctx.lineTo(Math.cos(rad)*r, Math.sin(rad)*r);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(0, 0, 5, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.restore();
+                ctx.shadowBlur = 0;
+                
+                gameState.bullets.forEach((b, bIdx) => {
+                    let dx = b.x - e.x;
+                    let dy = b.y - e.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < e.size) {
+                        createExplosion(e.x, e.y, e.color);
+                        playSound('hit');
+                        gameState.enemies.splice(i, 1);
+                        gameState.bullets.splice(bIdx, 1);
+                        gameState.enemyKillCount++;
+                        checkGateTrigger();
+                        return;
+                    }
+                });
+
+                if (e.y > canvas.height) gameState.enemies.splice(i, 1);
+            }
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<15; i++) {
+                gameState.particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1,
+                    color: color,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        function updateParticles() {
+            for(let i=gameState.particles.length-1; i>=0; i--) {
+                let p = gameState.particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.04;
+                
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                
+                if(p.life <= 0) gameState.particles.splice(i, 1);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // 新增：更新浮動文字
+        function showFloatingText(x, y, text, color) {
+            const el = document.createElement('div');
+            el.className = 'fixed text-2xl font-bold float-text pointer-events-none orbitron';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.color = color;
+            el.textContent = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function updateFloatingTexts() {
+            // 目前使用 CSS Animation 處理浮動文字，這裡預留空函式
+        }
+
+        function checkGateTrigger() {
+            if (gameState.enemyKillCount >= gameState.nextGateThreshold) {
+                gameState.enemyKillCount = 0;
+                showQuestion();
+            }
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if(gameState.active && !gameState.paused) {
+                gameState.player.x = e.clientX;
+            }
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if(gameState.active && !gameState.paused) {
+                e.preventDefault(); 
+                gameState.player.x = e.touches[0].clientX;
+            }
+        }, {passive: false});
+
+        document.addEventListener('mousedown', (e) => {
+            if(!e.target.closest('#quizModal') && !e.target.closest('button')) fireBullet();
+        });
+        document.addEventListener('touchstart', (e) => {
+            if(!e.target.closest('#quizModal') && !e.target.closest('button')) fireBullet();
+        });
+
+        function fireBullet() {
+             if(gameState.active && !gameState.paused) {
+                gameState.bullets.push({ x: gameState.player.x, y: gameState.player.y - 30 });
+                playSound('shoot');
+            }
+        }
+
+        // 新增：遊戲初始化序列 (包含倒數)
+        function initGameSequence() {
+            const nameInput = document.getElementById('playerNameInput');
+            const name = nameInput.value.trim() || "Agent 007";
+            gameState.playerName = name;
+            document.getElementById('playerNameDisplay').textContent = name;
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('ui-layer').classList.remove('hidden');
+            
+            resize();
+            
+            // 啟動倒數
+            startCountdown();
+        }
+
+        function startCountdown() {
+            const layer = document.getElementById('countdownLayer');
+            const text = document.getElementById('countdownText');
+            layer.classList.remove('hidden');
+            
+            let count = 5;
+            text.textContent = count;
+            
+            const timer = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    text.textContent = count;
+                    // 重置動畫以觸發效果
+                    text.classList.remove('countdown-num');
+                    void text.offsetWidth;
+                    text.classList.add('countdown-num');
+                } else {
+                    clearInterval(timer);
+                    text.textContent = "GO!";
+                    setTimeout(() => {
+                        layer.classList.add('hidden');
+                        startGame();
+                    }, 500);
+                }
+            }, 1000);
+        }
+
+        function startGame() {
+            gameState.questions = [...QUESTION_POOL].sort(() => 0.5 - Math.random()).slice(0, GAME_CONFIG.totalQuestions);
+            
+            gameState.active = true;
+            gameState.paused = false;
+            gameState.score = 0;
+            gameState.timeLeft = GAME_CONFIG.timeLimit;
+            gameState.currentQIndex = 0;
+            gameState.streak = 0;
+            gameState.correctCount = 0;
+            gameState.enemyKillCount = 0;
+            gameState.enemies = [];
+            gameState.bullets = [];
+
+            document.getElementById('endScreen').classList.add('hidden');
+            updateUI();
+            
+            // 啟動計時器 (修正：確保只有一個計時器在運行)
+            if(window.gameTimer) clearInterval(window.gameTimer);
+            window.gameTimer = setInterval(() => {
+                if (gameState.active && !gameState.paused && gameState.timeLeft > 0) {
+                    gameState.timeLeft--;
+                    const m = Math.floor(gameState.timeLeft / 60).toString().padStart(2, '0');
+                    const s = (gameState.timeLeft % 60).toString().padStart(2, '0');
+                    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+                    
+                    if (gameState.timeLeft <= 0) endGame();
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+            gameState.nextGateThreshold = 2; 
+        }
+
+        function showQuestion() {
+            if (gameState.currentQIndex >= GAME_CONFIG.totalQuestions) {
+                endGame();
+                return;
+            }
+
+            gameState.paused = true;
+            const qData = gameState.questions[gameState.currentQIndex];
+            
+            document.getElementById('quizModal').classList.remove('hidden');
+            document.getElementById('qNum').textContent = (gameState.currentQIndex + 1).toString().padStart(2, '0');
+            document.getElementById('questionText').textContent = qData.q;
+            document.getElementById('feedbackMsg').classList.add('hidden');
+            
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-cyan-400 rounded transition-all flex items-center group relative overflow-hidden text-sm";
+                btn.innerHTML = `
+                    <div class="absolute inset-0 bg-cyan-500/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    <span class="w-6 h-6 rounded-full bg-gray-700 text-gray-300 flex items-center justify-center mr-3 font-bold relative z-10 border border-gray-500 group-hover:border-cyan-400 group-hover:text-cyan-400 text-xs">${String.fromCharCode(65+idx)}</span>
+                    <span class="text-gray-200 group-hover:text-white relative z-10 font-medium">${opt}</span>
+                `;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    checkAnswer(idx, qData.ans);
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct) {
+            const btns = document.querySelectorAll('#optionsGrid button');
+            const feedback = document.getElementById('feedbackMsg');
+            feedback.classList.remove('hidden');
+            btns.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                playSound('correct');
+                btns[selected].classList.remove('bg-gray-800');
+                btns[selected].classList.add('bg-green-900', 'border-green-400');
+                feedback.innerHTML = "<i class='fas fa-check-circle mr-2'></i> CORRECT ACCESS GRANTED";
+                feedback.className = "mt-3 text-center font-bold p-2 rounded bg-green-900/80 text-green-400 border border-green-500 backdrop-blur-sm shadow-[0_0_15px_rgba(34,197,94,0.4)]";
+                
+                gameState.score += GAME_CONFIG.baseScore;
+                gameState.streak++;
+                gameState.correctCount++; 
+                checkStreakReward();
+            } else {
+                playSound('wrong');
+                btns[selected].classList.remove('bg-gray-800');
+                btns[selected].classList.add('bg-red-900', 'border-red-500');
+                btns[correct].classList.add('bg-green-900', 'border-green-400', 'ring-2', 'ring-green-400'); 
+                feedback.innerHTML = "<i class='fas fa-exclamation-triangle mr-2'></i> ACCESS DENIED (-50 PTS)";
+                feedback.className = "mt-3 text-center font-bold p-2 rounded bg-red-900/80 text-red-400 border border-red-500 backdrop-blur-sm";
+                
+                // 扣分機制
+                gameState.score = Math.max(0, gameState.score - GAME_CONFIG.penaltyScore);
+                showFloatingText(window.innerWidth / 2, window.innerHeight / 2, "-50", "#ef4444"); // 紅色扣分
+                
+                gameState.streak = 0;
+            }
+
+            gameState.currentQIndex++;
+            updateUI();
+
+            setTimeout(() => {
+                document.getElementById('quizModal').classList.add('hidden');
+                gameState.paused = false;
+                gameState.nextGateThreshold = 5; 
+                requestAnimationFrame(gameLoop);
+                
+                if(gameState.currentQIndex >= GAME_CONFIG.totalQuestions) {
+                    endGame();
+                }
+            }, 2000);
+        }
+
+        function checkStreakReward() {
+            const streakBar = document.getElementById('streakBar');
+            const bonusText = document.getElementById('streakBonusText');
+            
+            let progress = (gameState.streak % GAME_CONFIG.chestThreshold) * (100 / GAME_CONFIG.chestThreshold);
+            if (gameState.streak > 0 && gameState.streak % GAME_CONFIG.chestThreshold === 0) progress = 100;
+            streakBar.style.width = `${progress}%`;
+
+            if (gameState.streak > 0 && gameState.streak % GAME_CONFIG.chestThreshold === 0) {
+                gameState.score += 100;
+                bonusText.classList.remove('hidden');
+                setTimeout(() => bonusText.classList.add('hidden'), 2500);
+                triggerChestEvent();
+            }
+        }
+
+        function triggerChestEvent() {
+            const chest = document.createElement('div');
+            chest.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-50 chest-pop pointer-events-none';
+            chest.innerHTML = `
+                <div class="text-7xl text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.8)]"><i class="fas fa-gift"></i></div>
+                <div class="text-xl font-black mt-4 text-white bg-black/50 px-4 py-2 rounded border border-yellow-400 orbitron">SUPPLY DROP +100 PTS</div>
+            `;
+            document.body.appendChild(chest);
+            setTimeout(() => chest.remove(), 1800);
+            playSound('correct');
+        }
+
+        function updateUI() {
+            document.getElementById('scoreDisplay').textContent = gameState.score;
+            document.getElementById('progressDisplay').textContent = `${gameState.currentQIndex} / ${GAME_CONFIG.totalQuestions}`;
+            document.getElementById('streakDisplay').textContent = gameState.streak;
+        }
+
+        function endGame() {
+            gameState.active = false;
+            gameState.paused = true;
+            clearInterval(window.gameTimer); // 停止計時
+            document.getElementById('ui-layer').classList.add('hidden');
+            document.getElementById('quizModal').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+
+            const timeBonus = gameState.timeLeft; 
+            const finalScore = gameState.score + timeBonus;
+            
+            const accuracy = Math.round((gameState.correctCount / GAME_CONFIG.totalQuestions) * 100);
+
+            document.getElementById('endPlayerName').textContent = gameState.playerName;
+            document.getElementById('finalScore').textContent = finalScore;
+            // document.getElementById('finalTime').textContent = `+${timeBonus}`; // 簡化畫面
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+            
+            const rankBadge = document.getElementById('rankBadge');
+            const msg = document.getElementById('endMessage');
+            
+            if (finalScore >= 1200) {
+                rankBadge.textContent = 'S';
+                rankBadge.style.borderColor = '#eab308';
+                rankBadge.style.color = '#eab308';
+                msg.textContent = "傳奇指揮官！系統核心完美防禦！";
+            } else if (finalScore >= 900) {
+                rankBadge.textContent = 'A';
+                rankBadge.style.borderColor = '#22c55e';
+                rankBadge.style.color = '#22c55e';
+                msg.textContent = "優秀操作員！威脅已清除。";
+            } else if (finalScore >= 600) {
+                rankBadge.textContent = 'B';
+                rankBadge.style.borderColor = '#3b82f6';
+                rankBadge.style.color = '#3b82f6';
+                msg.textContent = "任務完成，建議加強訓練。";
+            } else {
+                rankBadge.textContent = 'C';
+                rankBadge.style.borderColor = '#9ca3af';
+                rankBadge.style.color = '#9ca3af';
+                msg.textContent = "防禦失敗，請重新複習課程檔案。";
+            }
+        }
+    </script>
+</body>
+</html>
