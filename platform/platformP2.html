@@ -1,0 +1,791 @@
+<!-- 
+  Project: 數位核心戰情室 (Digital Core War Room)
+  Version: 2.0 (Enhanced Edition)
+  
+  [GitHub Deployment Instructions]
+  1. Save this file as "index.html".
+  2. Create a new repository on GitHub.
+  3. Upload this file to the repository.
+  4. Go to Settings > Pages > Select "main" branch > Save.
+  5. Your site will be live!
+-->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數位核心戰情室 | 硬體與系統解密</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- 引入 FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+	<!-- 新增網站小圖示 -->
+    <link rel="icon" type="image/png" href="img/favicon.png">
+	
+    <style>
+        /* 全局變數與基礎設定 */
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff0a;
+            --bg-dark: #050510;
+            --card-bg: rgba(20, 20, 35, 0.8);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            overflow-x: hidden;
+            cursor: none; /* 隱藏預設滑鼠 */
+        }
+
+        h1, h2, h3, .tech-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 背景網格動畫 */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            perspective: 500px;
+            transform-style: preserve-3d;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { transform: translateY(0) rotateX(20deg); }
+            100% { transform: translateY(50px) rotateX(20deg); }
+        }
+
+        /* 特效滑鼠游標 */
+        #cursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            mix-blend-mode: difference;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        #cursor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-purple);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        body:hover #cursor {
+            opacity: 1;
+        }
+        
+        /* 懸停時的滑鼠變化 */
+        .hover-target:hover ~ #cursor, 
+        button:hover ~ #cursor,
+        a:hover ~ #cursor,
+        .cursor-pointer:hover ~ #cursor,
+        .tech-card:hover ~ #cursor {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-purple);
+        }
+
+        /* 點擊特效 */
+        .click-effect {
+            position: fixed;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none;
+            z-index: 9998;
+            animation: ripple 0.6s linear;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* 霓虹文字特效 */
+        .neon-text-blue {
+            text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue);
+        }
+        .neon-text-purple {
+            text-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple);
+        }
+
+        /* 卡片樣式 */
+        .tech-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        .tech-card:hover::before {
+            left: 100%;
+        }
+
+        /* 時間軸樣式 */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px solid var(--neon-purple);
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            padding-left: 2.5rem;
+            border-left-color: var(--neon-blue);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            background: var(--bg-dark);
+            border: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover::before {
+            background: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* Modal 樣式 */
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 掃描線特效 */
+        .scan-line {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0, 243, 255, 0.1) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100%; }
+        }
+
+        /* 選項按鈕 */
+        .quiz-btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            transition: all 0.3s;
+        }
+        
+        .quiz-btn:hover {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .quiz-btn.correct {
+            background: var(--neon-green);
+            color: black;
+            border-color: var(--neon-green);
+        }
+
+        .quiz-btn.wrong {
+            background: #ff0055;
+            color: white;
+            border-color: #ff0055;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 背景網格 -->
+    <div class="bg-grid"></div>
+    <!-- 滑鼠游標 -->
+    <div id="cursor"></div>
+
+    <!-- 導航列 -->
+    <nav class="fixed top-0 w-full z-50 bg-opacity-90 bg-gray-900 border-b border-gray-700 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-network-wired text-cyan-400 text-2xl"></i>
+                <span class="text-xl font-bold tracking-wider text-white tech-font">數位核心<span class="text-cyan-400">戰情室</span></span>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm">
+                <a href="#mission1" class="hover:text-cyan-400 transition cursor-none">硬體情報</a>
+                <a href="#mission2" class="hover:text-purple-400 transition cursor-none">系統陣營</a>
+                <a href="#quiz" class="hover:text-green-400 transition cursor-none">戰力測驗</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 標題區 (Hero Section) -->
+    <header class="min-h-screen flex flex-col justify-center items-center text-center px-4 pt-16 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-900 z-0"></div>
+        <h1 class="text-3xl md:text-6xl font-bold mb-4 z-10 neon-text-blue tracking-widest tech-font leading-tight" data-aos="fade-down">
+            HARDWARE & OS<br>DECODED
+        </h1>
+        <h2 class="text-xl md:text-3xl text-purple-400 font-bold mb-6 z-10">硬體演進 x 系統平台大解密</h2>
+        <p class="text-lg text-gray-300 mb-8 max-w-2xl z-10">
+            歡迎來到數位核心戰情室。在這裡，我們將拆解電腦的歷史，並深入三大作業系統的陣營。點擊任何發光物體以獲取詳細情報。
+        </p>
+        <a href="#mission1" class="z-10 px-8 py-3 border-2 border-cyan-400 text-cyan-400 font-bold rounded-full hover:bg-cyan-400 hover:text-gray-900 transition duration-300 shadow-[0_0_20px_rgba(0,243,255,0.4)] cursor-none animate-pulse">
+            <i class="fas fa-search mr-2"></i> 開始探索
+        </a>
+    </header>
+
+    <!-- 任務一：硬體時光機 -->
+    <section id="mission1" class="py-20 px-4 container mx-auto">
+        <div class="flex items-center mb-12">
+            <span class="text-5xl mr-4 opacity-20 font-bold tech-font">01</span>
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-2"><i class="fas fa-microchip text-purple-400 mr-2"></i> 電腦硬體時光機</h2>
+                <p class="text-gray-400">點擊不同世代，查看機密數據檔案</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 左側：世代演變時間軸 -->
+            <div class="tech-card p-6 rounded-xl relative">
+                <div class="absolute top-2 right-2 text-xs text-cyan-400 border border-cyan-400 px-2 py-1 rounded">INTERACTIVE</div>
+                <h3 class="text-xl font-bold mb-6 text-cyan-400 border-b border-gray-700 pb-2">演化五部曲</h3>
+                
+                <div class="timeline-item cursor-none group" onclick="openModal('gen1')">
+                    <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition">第 1 代：真空管巨人 <i class="fas fa-external-link-alt text-xs ml-2 opacity-0 group-hover:opacity-100"></i></h4>
+                    <p class="text-sm text-gray-400">1946~1958 | 關鍵字：ENIAC</p>
+                </div>
+                
+                <div class="timeline-item cursor-none group" onclick="openModal('gen2')">
+                    <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition">第 2 代：電晶體 <i class="fas fa-external-link-alt text-xs ml-2 opacity-0 group-hover:opacity-100"></i></h4>
+                    <p class="text-sm text-gray-400">1959~1963 | 關鍵字：體積縮小</p>
+                </div>
+                
+                <div class="timeline-item cursor-none group" onclick="openModal('gen3')">
+                    <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition">第 3 代：積體電路 (IC) <i class="fas fa-external-link-alt text-xs ml-2 opacity-0 group-hover:opacity-100"></i></h4>
+                    <p class="text-sm text-gray-400">1964~1971 | 關鍵字：晶片誕生</p>
+                </div>
+
+                <div class="timeline-item cursor-none group" onclick="openModal('gen4')">
+                    <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition">第 4 代：超大型積體電路 (VLSI) <i class="fas fa-external-link-alt text-xs ml-2 opacity-0 group-hover:opacity-100"></i></h4>
+                    <p class="text-sm text-gray-400">1971~Now | 關鍵字：微處理器</p>
+                </div>
+
+                <div class="timeline-item border-l-0 cursor-none group" onclick="openModal('gen5')">
+                    <div class="absolute left-[-9px] top-0 w-4 h-4 bg-purple-500 rounded-full animate-pulse shadow-[0_0_10px_#bc13fe]"></div>
+                    <h4 class="text-lg font-bold text-purple-400 group-hover:text-purple-300 transition">第 5 代：人工智慧 (AI) <i class="fas fa-external-link-alt text-xs ml-2 opacity-0 group-hover:opacity-100"></i></h4>
+                    <p class="text-sm text-gray-400">Future | 關鍵字：語音與思考</p>
+                </div>
+            </div>
+
+            <!-- 右側：CPU 知識卡 -->
+            <div class="flex flex-col gap-6">
+                <div class="tech-card p-6 rounded-xl flex-1 flex flex-col justify-center items-center text-center cursor-none hover:bg-gray-800 transition" onclick="openModal('cpu')">
+                    <div class="absolute top-2 right-2 text-xs text-gray-500"><i class="fas fa-info-circle"></i> 點擊詳解</div>
+                    <i class="fas fa-microchip text-6xl text-cyan-400 mb-4 animate-pulse"></i>
+                    <h3 class="text-2xl font-bold text-white mb-2">CPU 中央處理器</h3>
+                    <p class="text-gray-300 text-sm mb-4">電腦的大腦，負責算術與指揮</p>
+                    <div class="grid grid-cols-2 gap-4 w-full">
+                        <div class="bg-gray-800 p-3 rounded border border-gray-600">
+                            <i class="fas fa-traffic-light text-yellow-400 mb-1"></i>
+                            <div class="font-bold text-sm">CU 控制單元</div>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded border border-gray-600">
+                            <i class="fas fa-calculator text-green-400 mb-1"></i>
+                            <div class="font-bold text-sm">ALU 算術邏輯</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-card p-6 rounded-xl">
+                    <h3 class="text-lg font-bold text-purple-400 mb-2">💡 知識快遞：多核心技術</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        想像一個廚房裡以前只有一個廚師 (單核心)，現在有四個廚師同時煮菜 (四核心)，速度當然變快了！
+                        <br>
+                        <span class="text-cyan-400 block mt-2">位元數進化：8位元 → 16位元 → 32位元 → 64位元 (現在主流)</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 任務二：作業系統平台 -->
+    <section id="mission2" class="py-20 px-4 bg-gray-900 bg-opacity-50 border-t border-gray-800">
+        <div class="container mx-auto">
+            <div class="flex items-center mb-12 justify-end">
+                <div class="text-right">
+                    <h2 class="text-3xl font-bold text-white mb-2">作業系統平台 <i class="fas fa-desktop text-blue-400 ml-2"></i></h2>
+                    <p class="text-gray-400">三大陣營詳細情報，點擊卡片解密</p>
+                </div>
+                <span class="text-5xl ml-4 opacity-20 font-bold tech-font">02</span>
+            </div>
+
+            <!-- 互動卡片區 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Windows -->
+                <div class="tech-card p-6 rounded-xl text-center group cursor-none hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]" onclick="openModal('windows')">
+                    <div class="absolute top-4 right-4 text-blue-400 animate-pulse"><i class="fas fa-plus"></i></div>
+                    <div class="w-20 h-20 mx-auto bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mb-4 group-hover:bg-opacity-100 transition duration-500">
+                        <i class="fab fa-windows text-4xl text-blue-400 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Microsoft Windows</h3>
+                    <p class="text-sm text-gray-400">市佔率王者</p>
+                    <div class="mt-4 text-xs text-blue-300 border border-blue-900 bg-blue-900 bg-opacity-20 py-1 rounded">點擊查看詳細特性</div>
+                </div>
+
+                <!-- macOS -->
+                <div class="tech-card p-6 rounded-xl text-center group cursor-none hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]" onclick="openModal('mac')">
+                    <div class="absolute top-4 right-4 text-gray-400 animate-pulse"><i class="fas fa-plus"></i></div>
+                    <div class="w-20 h-20 mx-auto bg-gray-500 bg-opacity-20 rounded-full flex items-center justify-center mb-4 group-hover:bg-opacity-100 transition duration-500">
+                        <i class="fab fa-apple text-4xl text-gray-300 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Apple macOS</h3>
+                    <p class="text-sm text-gray-400">設計師的最愛</p>
+                    <div class="mt-4 text-xs text-gray-300 border border-gray-700 bg-gray-800 bg-opacity-40 py-1 rounded">點擊查看發展史</div>
+                </div>
+
+                <!-- Linux -->
+                <div class="tech-card p-6 rounded-xl text-center group cursor-none hover:shadow-[0_0_30px_rgba(234,179,8,0.3)]" onclick="openModal('linux')">
+                    <div class="absolute top-4 right-4 text-yellow-400 animate-pulse"><i class="fas fa-plus"></i></div>
+                    <div class="w-20 h-20 mx-auto bg-yellow-500 bg-opacity-20 rounded-full flex items-center justify-center mb-4 group-hover:bg-opacity-100 transition duration-500">
+                        <i class="fab fa-linux text-4xl text-yellow-400 group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Linux</h3>
+                    <p class="text-sm text-gray-400">自由開源軟體</p>
+                    <div class="mt-4 text-xs text-yellow-300 border border-yellow-900 bg-yellow-900 bg-opacity-20 py-1 rounded">點擊查看發行版本</div>
+                </div>
+            </div>
+
+            <!-- 介面進化史 -->
+            <div class="bg-gray-800 bg-opacity-50 p-8 rounded-2xl border border-gray-700">
+                <h3 class="text-2xl font-bold text-center mb-8 neon-text-blue">人機介面進化論 (Interface Evolution)</h3>
+                <div class="flex flex-col md:flex-row justify-between items-center text-center space-y-6 md:space-y-0">
+                    <div class="flex-1 opacity-60 hover:opacity-100 transition p-4">
+                        <i class="fas fa-terminal text-4xl mb-3 text-gray-400"></i>
+                        <h4 class="font-bold">CLI 文字介面</h4>
+                        <p class="text-xs text-gray-500 mt-1">Command-Line Interface</p>
+                        <p class="text-xs text-gray-400 mt-2">需背指令，鍵盤操作</p>
+                    </div>
+                    <div class="text-2xl text-cyan-400 animate-pulse"><i class="fas fa-angle-right"></i></div>
+                    <div class="flex-1 transform scale-110 p-4 border border-cyan-400 rounded-lg bg-cyan-900 bg-opacity-10 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                        <i class="fas fa-mouse-pointer text-5xl mb-3 text-cyan-400"></i>
+                        <h4 class="font-bold text-cyan-400">GUI 圖形介面</h4>
+                        <p class="text-xs text-gray-300 mt-1">Graphical User Interface</p>
+                        <p class="text-xs text-white mt-2">直覺視窗，滑鼠操作 (主流)</p>
+                    </div>
+                    <div class="text-2xl text-cyan-400 animate-pulse"><i class="fas fa-angle-right"></i></div>
+                    <div class="flex-1 opacity-60 hover:opacity-100 transition p-4">
+                        <i class="fas fa-microphone-lines text-4xl mb-3 text-purple-400"></i>
+                        <h4 class="font-bold">NUI 自然介面</h4>
+                        <p class="text-xs text-gray-500 mt-1">Natural User Interface</p>
+                        <p class="text-xs text-gray-400 mt-2">語音控制 (Siri/Google)，AI趨勢</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 最終測驗 -->
+    <section id="quiz" class="py-20 px-4 container mx-auto mb-20">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-white tech-font neon-text-purple">MISSION CHECK</h2>
+            <p class="text-gray-400 mt-2">戰情室總結測驗</p>
+        </div>
+
+        <div class="max-w-2xl mx-auto tech-card p-8 rounded-xl relative">
+            <div id="quiz-container">
+                <div class="flex justify-between items-center mb-6">
+                    <span id="question-number" class="text-cyan-400 font-bold">Question 1/5</span>
+                    <span id="score-display" class="text-purple-400 font-bold">Score: 0</span>
+                </div>
+                <h3 id="question-text" class="text-xl font-bold mb-6 min-h-[60px]">載入中...</h3>
+                <div id="options-container" class="grid gap-4">
+                    <!-- 選項 -->
+                </div>
+            </div>
+            
+            <div id="result-container" class="hidden text-center py-10">
+                <i class="fas fa-trophy text-6xl text-yellow-400 mb-4 animate-bounce"></i>
+                <h3 class="text-3xl font-bold text-white mb-2">任務完成!</h3>
+                <p id="final-score" class="text-xl text-cyan-400 mb-6">你的得分是: 100</p>
+                <button onclick="resetQuiz()" class="px-6 py-2 border border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition rounded-full cursor-none">
+                    重新挑戰
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 全像投影 Modal (隱藏層) -->
+    <div id="info-modal" class="fixed inset-0 z-[10000] hidden flex justify-center items-center modal-overlay opacity-0 transition-opacity duration-300">
+        <div class="modal-content w-11/12 md:w-2/3 max-w-2xl p-8 rounded-xl transform scale-95 transition-transform duration-300">
+            <div class="scan-line"></div>
+            <!-- 關閉按鈕 -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl cursor-none z-50">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Modal 內容 -->
+            <div class="flex items-center mb-4 border-b border-gray-700 pb-4">
+                <i id="modal-icon" class="fas fa-microchip text-3xl text-cyan-400 mr-4"></i>
+                <h3 id="modal-title" class="text-2xl font-bold text-white tech-font">TITLE</h3>
+            </div>
+            
+            <div id="modal-body" class="text-gray-300 leading-relaxed space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- 動態內容 -->
+            </div>
+            
+            <div class="mt-6 text-right">
+                <span class="text-xs text-cyan-600 font-mono">SECURE CONNECTION ESTABLISHED...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 border-t border-gray-800 py-6 text-center text-gray-500 text-sm">
+        <p>數位核心戰情室 © 2025 | 國中資訊科技互動教材 (v2.0)</p>
+    </footer>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        // --- 1. 滑鼠游標特效 ---
+        const cursor = document.getElementById('cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('click', (e) => {
+            const clickEffect = document.createElement('div');
+            clickEffect.classList.add('click-effect');
+            clickEffect.style.left = e.clientX + 'px';
+            clickEffect.style.top = e.clientY + 'px';
+            document.body.appendChild(clickEffect);
+            setTimeout(() => clickEffect.remove(), 600);
+        });
+
+        // --- 2. Modal 資料庫 ---
+        const modalData = {
+            'gen1': {
+                title: "第一代電腦 (1946-1958)",
+                icon: "fas fa-warehouse",
+                content: `
+                    <p><strong class="text-cyan-400">核心元件：</strong> 真空管 (Vacuum Tube)</p>
+                    <p>這是電腦的老祖宗！最有名的代表是 <strong>ENIAC</strong>。</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li><strong>體積超大：</strong> 佔地約 42 坪 (比一間教室還大)。</li>
+                        <li><strong>重量驚人：</strong> 重達 30 公噸。</li>
+                        <li><strong>缺點：</strong> 非常耗電、運作時會產生高熱，真空管很容易燒壞，需要冷氣機24小時伺候。</li>
+                    </ul>
+                `
+            },
+            'gen2': {
+                title: "第二代電腦 (1959-1963)",
+                icon: "fas fa-microchip",
+                content: `
+                    <p><strong class="text-cyan-400">核心元件：</strong> 電晶體 (Transistor)</p>
+                    <p>科學家發明了電晶體，取代了真空管，這是巨大的進步！</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li><strong>體積縮小：</strong> 只有真空管的 1/20。</li>
+                        <li><strong>性能提升：</strong> 運算速度更快，更省電，也更不容易壞掉。</li>
+                    </ul>
+                `
+            },
+            'gen3': {
+                title: "第三代電腦 (1964-1971)",
+                icon: "fas fa-memory",
+                content: `
+                    <p><strong class="text-cyan-400">核心元件：</strong> 積體電路 (IC)</p>
+                    <p>將數十個、數百個電晶體和電路，全部縮小整合在一個小小的矽晶片上。</p>
+                    <p class="text-sm mt-2 text-gray-400">電腦開始變得可以放在桌子上，不再是龐然大物，價格也開始降低，商業應用變得普遍。</p>
+                `
+            },
+            'gen4': {
+                title: "第四代電腦 (1971-現今)",
+                icon: "fas fa-server",
+                content: `
+                    <p><strong class="text-cyan-400">核心元件：</strong> 超大型積體電路 (VLSI)</p>
+                    <p>將數百萬、甚至數億個電子元件塞進指甲大小的晶片中！</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li>這就是現代的 <strong>微處理器 (Microprocessor)</strong>。</li>
+                        <li>個人電腦 (PC) 開始普及進入家庭。</li>
+                        <li>運算速度飛快，促成了網際網路的發展。</li>
+                    </ul>
+                `
+            },
+            'gen5': {
+                title: "第五代電腦 (未來)",
+                icon: "fas fa-brain",
+                content: `
+                    <p><strong class="text-purple-400">核心概念：</strong> 人工智慧 (AI)</p>
+                    <p>不再只是單純計算，而是具備「思考」、「判斷」與「學習」能力。</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li>具備語音辨識能力 (聽懂人話)。</li>
+                        <li>能進行邏輯推論與知識處理。</li>
+                        <li>應用範例：ChatGPT, 自駕車, 智慧家庭。</li>
+                    </ul>
+                `
+            },
+            'cpu': {
+                title: "CPU 內部構造解密",
+                icon: "fas fa-cogs",
+                content: `
+                    <p>CPU (Central Processing Unit) 是電腦的心臟與大腦。它主要由兩個部門組成：</p>
+                    <div class="mt-4 p-4 bg-gray-800 rounded border-l-4 border-yellow-400">
+                        <h4 class="text-white font-bold">1. 控制單元 (Control Unit)</h4>
+                        <p class="text-sm text-gray-400">像是交通警察或指揮官。負責解讀指令，指揮資料該去哪裡、該做什麼。</p>
+                    </div>
+                    <div class="mt-4 p-4 bg-gray-800 rounded border-l-4 border-green-400">
+                        <h4 class="text-white font-bold">2. 算術邏輯單元 (ALU)</h4>
+                        <p class="text-sm text-gray-400">像是數學家。負責所有的加減乘除運算，以及邏輯判斷 (大於、小於、等於)。</p>
+                    </div>
+                `
+            },
+            'windows': {
+                title: "Microsoft Windows 陣營",
+                icon: "fab fa-windows",
+                content: `
+                    <p>由微軟 (Microsoft) 開發，是目前世界上最多人使用的作業系統。</p>
+                    <h4 class="text-blue-400 font-bold mt-4">戰力分析：</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li><strong>優點：</strong> 軟體支援度最高，遊戲最多，硬體相容性極佳 (任何牌子的電腦幾乎都能裝)。</li>
+                        <li><strong>缺點：</strong> 因為用的人多，病毒和駭客攻擊也最多，需要注意資安。</li>
+                        <li><strong>適用：</strong> 一般家庭、辦公室、電競玩家。</li>
+                    </ul>
+                `
+            },
+            'mac': {
+                title: "Apple macOS 陣營",
+                icon: "fab fa-apple",
+                content: `
+                    <p>由蘋果 (Apple) 開發，專屬於 Mac 電腦的作業系統。</p>
+                    <h4 class="text-gray-300 font-bold mt-4">歷史演進：</h4>
+                    <p class="text-xs text-gray-500 mb-2">68k Mac (早期) → PPC Mac → Intel Mac → Apple Silicon (M1/M2)</p>
+                    <h4 class="text-gray-300 font-bold mt-2">戰力分析：</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li><strong>優點：</strong> 介面極度優美，系統非常穩定，色彩管理精準，與 iPhone/iPad 連動性強。</li>
+                        <li><strong>缺點：</strong> 封閉系統 (只能買蘋果電腦)，價格較高，遊戲較少。</li>
+                        <li><strong>適用：</strong> 設計師、影像工作者、蘋果生態系用戶。</li>
+                    </ul>
+                `
+            },
+            'linux': {
+                title: "Linux 開源陣營",
+                icon: "fab fa-linux",
+                content: `
+                    <p>由 Linus Torvalds 開發核心，屬於「自由軟體 (Open Source)」。象徵物是一隻企鵝。</p>
+                    <h4 class="text-yellow-400 font-bold mt-4">常見版本 (Distributions)：</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-sm text-gray-400">
+                        <li><strong class="text-white">Ubuntu：</strong> 介面友善，最適合初學者使用的版本。</li>
+                        <li><strong class="text-white">CentOS：</strong> 穩定性極高，專門用來架設伺服器 (Server)。</li>
+                        <li><strong class="text-white">ezgo：</strong> 台灣教育部推動的校園版，內建許多教育軟體。</li>
+                        <li><strong class="text-white">Android：</strong> 是的！手機的安卓系統核心其實就是修改自 Linux！</li>
+                    </ul>
+                `
+            }
+        };
+
+        // --- 3. Modal 控制函數 ---
+        const modal = document.getElementById('info-modal');
+        const modalContent = document.querySelector('.modal-content');
+
+        function openModal(key) {
+            const data = modalData[key];
+            if(!data) return;
+
+            document.getElementById('modal-title').textContent = data.title;
+            document.getElementById('modal-icon').className = `${data.icon} text-3xl text-cyan-400 mr-4`;
+            document.getElementById('modal-body').innerHTML = data.content;
+
+            modal.classList.remove('hidden');
+            // 小延遲讓 CSS transition 生效
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 點擊背景關閉 Modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // --- 4. 測驗系統 ---
+        const questions = [
+            {
+                question: "世界上第一部電腦 ENIAC 主要使用的核心元件是什麼？",
+                options: ["電晶體", "真空管", "積體電路", "人工智慧"],
+                correct: 1
+            },
+            {
+                question: "下列哪一個作業系統屬於「開放原始碼」，可以自由修改？",
+                options: ["Windows", "macOS", "Linux", "iOS"],
+                correct: 2
+            },
+            {
+                question: "CPU 中的「控制單元」主要功能是什麼？",
+                options: ["負責數學運算", "負責儲存資料", "負責指揮協調各單元運作", "負責顯示畫面"],
+                correct: 2
+            },
+            {
+                question: "適合用於架設伺服器，強調系統穩定的 Linux 版本是？",
+                options: ["Ubuntu", "CentOS", "Windows 11", "macOS"],
+                correct: 1
+            },
+            {
+                question: "現代主流的圖形使用者介面簡稱為？",
+                options: ["CLI", "GUI", "API", "USB"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('question-number').textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-btn p-4 rounded-lg text-left w-full font-bold cursor-none group';
+                btn.innerHTML = `<span class="opacity-50 mr-2 group-hover:opacity-100 transition">></span> ${opt}`;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, btnElement) {
+            const buttons = document.querySelectorAll('.quiz-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === questions[currentQuestion].correct) {
+                btnElement.classList.add('correct');
+                score += 20;
+                document.getElementById('score-display').textContent = `Score: ${score}`;
+            } else {
+                btnElement.classList.add('wrong');
+                buttons[questions[currentQuestion].correct].classList.add('correct');
+            }
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1200);
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('final-score').textContent = `你的得分是: ${score} / 100`;
+            
+            let message = "";
+            if(score === 100) message = "Perfect! 你是數位戰情室的指揮官！";
+            else if(score >= 60) message = "Good Job! 基礎情報已掌握！";
+            else message = "Mission Failed... 建議重新瀏覽情報檔案！";
+            
+            const msgEl = document.createElement('p');
+            msgEl.className = "text-gray-300 mb-4";
+            msgEl.textContent = message;
+            document.getElementById('final-score').after(msgEl);
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('score-display').textContent = `Score: 0`;
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('result-container').classList.add('hidden');
+            const oldMsg = document.querySelector('#result-container p.text-gray-300');
+            if(oldMsg) oldMsg.remove();
+            loadQuestion();
+        }
+
+        // 初始化
+        loadQuestion();
+        // 初始化 AOS (如果未來有引入，這裡預留結構)
+
+    </script>
+</body>
+</html>
