@@ -411,6 +411,7 @@
             particles: [], // 包含爆炸與煙火
             bullets: [],
             player: { x: 0, y: 0, w: 50, h: 60 },
+            shootFlash: 0, // 新增：射擊閃光計時器
             enemyKillCount: 0,
             nextGateThreshold: 5,
             frame: 0
@@ -543,9 +544,26 @@
 
         function updatePlayer() {
             const { x, y, w, h } = gameState.player;
-            ctx.save();
-            ctx.translate(x, y);
             
+            // 射擊後座力：如果正在發光(射擊中)，則往下位移
+            const recoil = gameState.shootFlash > 0 ? 3 : 0;
+            
+            ctx.save();
+            ctx.translate(x, y + recoil);
+            
+            // 設定發光效果 (Shadow Blur)
+            if (gameState.shootFlash > 0) {
+                // 射擊時：強烈白光/亮藍光
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = '#ffffff'; 
+                gameState.shootFlash--;
+            } else {
+                // 平常：藍色霓虹光
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#06b6d4';
+            }
+
+            // 戰機噴射火焰
             const flameLen = Math.random() * 20 + 10;
             ctx.beginPath();
             ctx.moveTo(-10, h/2);
@@ -554,6 +572,7 @@
             ctx.fillStyle = '#06b6d4';
             ctx.fill();
             
+            // 戰機本體
             ctx.beginPath();
             ctx.moveTo(0, -h/2); 
             ctx.lineTo(w/2, h/4); 
@@ -569,6 +588,7 @@
             ctx.lineWidth = 2;
             ctx.stroke();
             
+            // 駕駛艙
             ctx.beginPath();
             ctx.moveTo(0, -h/6);
             ctx.lineTo(5, 0);
@@ -577,6 +597,24 @@
             ctx.closePath();
             ctx.fillStyle = '#22d3ee';
             ctx.fill();
+
+            // 繪製砲口閃光 (Muzzle Flash)
+            if (gameState.shootFlash > 2) { // 只在射擊的前幾幀顯示
+                 // 中心光球
+                 ctx.beginPath();
+                 ctx.fillStyle = '#fff';
+                 ctx.arc(0, -h/2 - 5, 8 + Math.random() * 5, 0, Math.PI * 2);
+                 ctx.fill();
+                 
+                 // 十字星芒
+                 ctx.strokeStyle = '#fff';
+                 ctx.lineWidth = 2;
+                 ctx.beginPath(); 
+                 ctx.moveTo(-20, -h/2 - 5); ctx.lineTo(20, -h/2 - 5); // 橫向
+                 ctx.moveTo(0, -h/2 - 25); ctx.lineTo(0, -h/2 + 15); // 縱向
+                 ctx.stroke();
+            }
+
             ctx.restore();
         }
 
@@ -752,6 +790,7 @@
         function fireBullet() {
              if(gameState.active && !gameState.paused) {
                 gameState.bullets.push({ x: gameState.player.x, y: gameState.player.y - 30 });
+                gameState.shootFlash = 5; // 觸發5幀的射擊閃光
                 playSound('shoot');
             }
         }
@@ -809,6 +848,7 @@
             gameState.enemyKillCount = 0;
             gameState.enemies = [];
             gameState.bullets = [];
+            gameState.shootFlash = 0;
 
             document.getElementById('endScreen').classList.add('hidden');
             updateUI();
