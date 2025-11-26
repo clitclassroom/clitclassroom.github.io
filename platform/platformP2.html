@@ -1,16 +1,21 @@
 <!-- 
   Project: 數位核心戰情室 (Digital Core War Room)
-  Version: 2.2 (Footer Update)
+  Version: 2.5 (Game Link Activated)
   
   [Update Log]
-  v2.2: Updated footer content to "CLIT Classroom" and added GitHub icon.
+  v2.5: Activated the "Core Defense Battle" game link.
+  v2.4: Added favicon link tag.
+  v2.3: Added "Core Defense Battle" section.
+  v2.2: Updated footer content.
+  v2.1: Fixed cursor visibility.
   
   [GitHub Deployment Instructions]
   1. Save this file as "index.html".
-  2. Create a new repository on GitHub.
-  3. Upload this file to the repository.
-  4. Go to Settings > Pages > Select "main" branch > Save.
-  5. Your site will be live!
+  2. Create a folder named "img" and place your "favicon.png" inside it.
+  3. Create a new repository on GitHub.
+  4. Upload this file and the img folder to the repository.
+  5. Go to Settings > Pages > Select "main" branch > Save.
+  6. Your site will be live!
 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -18,10 +23,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>數位核心戰情室 | 硬體與系統解密</title>
-
+    
     <!-- 新增網站小圖示 -->
     <link rel="icon" type="image/png" href="img/favicon.png">
-  
+
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Google Fonts -->
@@ -35,6 +40,7 @@
             --neon-blue: #00f3ff;
             --neon-purple: #bc13fe;
             --neon-green: #0aff0a;
+            --neon-red: #ff3333;
             --bg-dark: #050510;
             --card-bg: rgba(20, 20, 35, 0.8);
         }
@@ -156,6 +162,9 @@
         }
         .neon-text-purple {
             text-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple);
+        }
+        .neon-text-red {
+            text-shadow: 0 0 5px var(--neon-red), 0 0 15px var(--neon-red);
         }
 
         /* 卡片樣式 */
@@ -279,6 +288,37 @@
             border-color: #ff0055;
         }
 
+        /* 遊戲按鈕特殊樣式 */
+        .game-btn {
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+            border: 2px solid var(--neon-red);
+            color: var(--neon-red);
+            transition: all 0.3s ease;
+        }
+
+        .game-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--neon-red);
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .game-btn:hover {
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .game-btn:hover::before {
+            left: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -295,10 +335,14 @@
                 <i class="fas fa-network-wired text-cyan-400 text-2xl"></i>
                 <span class="text-xl font-bold tracking-wider text-white tech-font">數位核心<span class="text-cyan-400">戰情室</span></span>
             </div>
-            <div class="hidden md:flex space-x-6 text-sm">
+            <div class="hidden md:flex space-x-6 text-sm items-center">
                 <a href="#mission1" class="hover:text-cyan-400 transition cursor-none">硬體情報</a>
                 <a href="#mission2" class="hover:text-purple-400 transition cursor-none">系統陣營</a>
                 <a href="#quiz" class="hover:text-green-400 transition cursor-none">戰力測驗</a>
+                <!-- 新增遊戲連結 -->
+                <a href="#game" class="px-3 py-1 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white transition rounded cursor-none animate-pulse font-bold">
+                    <i class="fas fa-gamepad mr-1"></i> 核心保衛戰
+                </a>
             </div>
         </div>
     </nav>
@@ -494,6 +538,61 @@
                 <button onclick="resetQuiz()" class="px-6 py-2 border border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition rounded-full cursor-none">
                     重新挑戰
                 </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 遊戲連結區塊 (New Section) -->
+    <section id="game" class="py-24 px-4 bg-black relative overflow-hidden">
+        <!-- 背景裝飾 -->
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(255,51,51,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,51,51,0.05)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+        
+        <div class="container mx-auto relative z-10 text-center">
+            <!-- 標題 -->
+            <div class="mb-12">
+                <h2 class="text-4xl md:text-6xl font-bold text-white mb-4 neon-text-red tech-font tracking-widest animate-pulse">
+                    CORE DEFENSE
+                </h2>
+                <h3 class="text-2xl text-gray-300">核心保衛戰：終極試煉</h3>
+            </div>
+
+            <!-- 遊戲卡片 -->
+            <div class="max-w-4xl mx-auto tech-card border-red-900/50 bg-gray-900/80 p-8 md:p-12 rounded-3xl relative group hover:border-red-500 transition-colors duration-500">
+                <!-- 裝飾角標 -->
+                <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-500"></div>
+                <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-red-500"></div>
+                <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-red-500"></div>
+                <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-red-500"></div>
+
+                <div class="flex flex-col md:flex-row items-center justify-between gap-10">
+                    <!-- 圖示 -->
+                    <div class="relative">
+                        <div class="w-40 h-40 rounded-full border-4 border-red-500/30 flex items-center justify-center relative bg-black/50">
+                            <i class="fas fa-shield-virus text-7xl text-red-500 z-10"></i>
+                            <!-- 雷達掃描動畫 -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/20 to-transparent w-full h-full rounded-full animate-spin"></div>
+                        </div>
+                    </div>
+
+                    <!-- 文字描述 -->
+                    <div class="text-left flex-1">
+                        <h4 class="text-2xl font-bold text-red-400 mb-4 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-3 animate-bounce"></i>
+                            WARNING: 系統入侵警報
+                        </h4>
+                        <p class="text-gray-300 mb-6 leading-relaxed">
+                            偵測到大量未知病毒正在攻擊 CPU 核心！<br>
+                            指揮官，請立即運用你學到的硬體與系統知識，啟動防火牆並殲滅病毒。
+                            <span class="block mt-2 text-sm text-gray-500">遊戲目標：正確回答問題以發射防禦雷射，保護核心不被攻破。</span>
+                        </p>
+                        
+                        <!-- 開始按鈕 (Updated Link) -->
+                        <a href="https://clitclassroom.github.io/platform/platformp2_game.html" target="_blank" class="game-btn inline-block px-8 py-4 text-xl font-bold rounded cursor-none tracking-widest w-full md:w-auto text-center">
+                            <i class="fas fa-play-circle mr-2"></i> START MISSION
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -831,4 +930,3 @@
     </script>
 </body>
 </html>
-
