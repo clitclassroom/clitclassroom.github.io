@@ -111,9 +111,11 @@
     <style>
         :root {
             --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
+            --neon-purple: #bd00ff;
             --neon-green: #0aff00;
             --neon-yellow: #fcee0a;
+            --neon-gold: #FFD700;
+            --neon-red: #ff003c;
             --bg-dark: #050505;
             --glass: rgba(20, 20, 20, 0.9);
         }
@@ -132,9 +134,24 @@
         }
 
         .text-neon-blue { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
-        .text-neon-pink { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
+        .text-neon-purple { color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple); }
         .text-neon-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
         .text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
+        
+        /* Updated Title Gradient (No Pink) */
+        .text-gradient-cool {
+            background: linear-gradient(to right, #00f3ff, #bd00ff, #00f3ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            animation: gradient-move 3s linear infinite;
+        }
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
 
         .cyber-box {
             background: var(--glass);
@@ -143,18 +160,20 @@
             position: relative;
             clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
         }
-        .cyber-box.pink { border-color: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); }
+        .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
         .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .cyber-box.red { border-color: var(--neon-red); box-shadow: 0 0 10px var(--neon-red), inset 0 0 20px rgba(255, 0, 60, 0.2); }
 
         .cyber-btn {
             background: rgba(0, 243, 255, 0.1);
             border: 2px solid var(--neon-blue);
             color: var(--neon-blue);
             font-family: 'Orbitron', sans-serif;
-            transition: all 0.3s;
+            transition: all 0.2s;
             cursor: pointer;
         }
-        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); transform: scale(1.02); }
+        .cyber-btn:active { transform: scale(0.98); background: #fff; box-shadow: 0 0 30px #fff; }
 
         .cyber-input {
             background: rgba(0,0,0,0.7);
@@ -182,41 +201,60 @@
         @keyframes glitch-anim { 0% { clip: rect(11px, 9999px, 81px, 0); } 100% { clip: rect(48px, 9999px, 54px, 0); } }
         @keyframes glitch-anim-2 { 0% { clip: rect(65px, 9999px, 100px, 0); } 100% { clip: rect(58px, 9999px, 66px, 0); } }
 
+        .answer-option { margin: 0 4px; }
         .answer-option:hover, .answer-option.selected {
             background: rgba(0, 243, 255, 0.2);
             border-color: var(--neon-yellow);
             box-shadow: 0 0 15px var(--neon-yellow);
-            transform: scale(1.02);
+            transform: scale(1.01);
         }
 
-        .ghost-mode {
-            animation: flash 0.2s infinite;
-        }
+        .ghost-mode { animation: flash 0.2s infinite; }
         @keyframes flash {
             0% { opacity: 1; filter: brightness(1.5); }
             50% { opacity: 0.3; filter: brightness(2); }
             100% { opacity: 1; filter: brightness(1.5); }
         }
         
-        .fruit-glow {
-            filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 15px #ff00ff);
+        .mystery-fruit-glow {
+            filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 15px #FFA500);
+            animation: pulse-glow 1s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            0% { filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 15px #FFA500); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 25px #FFA500); transform: scale(1.2); }
+        }
+
+        /* Health Bar */
+        .hp-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border: 1px solid #555;
+            position: relative;
+            overflow: hidden;
+        }
+        .hp-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f3ff, #0aff00);
+            transition: width 0.3s ease;
+        }
+        .hp-critical {
+            animation: hp-blink 0.5s infinite;
+            background: #ff003c !important;
+        }
+        @keyframes hp-blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         /* Footer */
-        #gameFooter {
-            transition: opacity 0.5s;
-        }
-        #gameFooter.hidden-footer {
-            opacity: 0;
-            pointer-events: none;
-        }
+        #gameFooter { transition: opacity 0.5s; }
+        #gameFooter.hidden-footer { opacity: 0; pointer-events: none; }
         
         /* Quiz Modal Fixes */
-        .quiz-modal-inner {
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-        /* Custom scrollbar for modal */
+        .quiz-modal-inner { max-height: 80vh; overflow-y: auto; }
         .quiz-modal-inner::-webkit-scrollbar { width: 6px; }
         .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
         .quiz-modal-inner::-webkit-scrollbar-track { background: #111; }
@@ -354,12 +392,13 @@
         }
     </script>
 
-    <!-- Start Screen -->
+    <!-- Start Screen (Compact Layout) -->
     <div id="startScreen" class="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md overflow-y-auto py-8 pb-24">
-        <div class="cyber-box pink flex flex-col md:flex-row max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
-            <!-- Left: Inputs -->
+        <div class="cyber-box purple flex flex-col md:flex-row max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
+            <!-- Left: Inputs (Smaller Font) -->
             <div class="w-full md:w-1/3 p-6 bg-black/50 flex flex-col justify-center border-b md:border-b-0 md:border-r border-gray-700">
-                <h1 class="text-4xl font-cyber text-neon-pink mb-4 glitch text-center" data-text="CORE CODE: 資訊獵手">
+                <!-- Title Updated: Cool Gradient (Cyan-Purple) -->
+                <h1 class="text-4xl font-cyber text-gradient-cool mb-4 glitch text-center font-bold" data-text="CORE CODE: 資訊獵手">
                     CORE CODE: 資訊獵手
                 </h1>
                 
@@ -388,26 +427,19 @@
                 <h3 class="text-2xl text-neon-green font-bold mb-4 border-b border-gray-700 pb-2">/// MISSION BRIEFING ///</h3>
                 <div class="grid grid-cols-1 gap-4 text-sm">
                     <div>
-                        <h4 class="text-neon-yellow font-bold mb-1"><i class="fas fa-gamepad"></i> 操作指南</h4>
+                        <h4 class="text-neon-yellow font-bold mb-1"><i class="fas fa-gamepad"></i> 操作與規則</h4>
                         <ul class="list-disc list-inside space-y-1 text-gray-400">
-                            <li>鍵盤 <strong>方向鍵</strong> 控制移動。</li>
-                            <li>依序尋找旗幟 <strong>1 - 25</strong>。</li>
-                            <li>答題：<strong>↑ ↓</strong> 選擇，<strong>Enter</strong> 確認。</li>
+                            <li>操控數據蛇尋找旗幟 <strong>1 - 25</strong> 進行答題。</li>
+                            <li><strong>生命值歸零時，任務失敗，需重新開始！</strong></li>
+                            <li><strong>咬到蛇尾</strong> 或 <strong>答錯題目</strong> 會扣除生命值。</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-neon-pink font-bold mb-1"><i class="fas fa-exclamation-triangle"></i> 注意事項</h4>
+                        <h4 class="text-neon-blue font-bold mb-1"><i class="fas fa-heartbeat"></i> 道具與獎勵</h4>
                         <ul class="list-disc list-inside space-y-1 text-gray-400">
-                            <li><strong>咬到蛇尾：</strong> 扣分並重生。</li>
-                            <li><strong>答錯：</strong> 扣除生命值與連勝紀錄。</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-neon-blue font-bold mb-1"><i class="fas fa-star"></i> 獎勵機制</h4>
-                        <ul class="list-disc list-inside space-y-1 text-gray-400">
-                            <li>每答對 <strong>5</strong> 題，蛇身長度增加。</li>
+                            <li><strong>數據修復包 (藍色果實)：</strong> 隨機出現，吃到可恢復大量生命值。</li>
+                            <li><strong>神秘果實 (金黃閃爍)：</strong> 30秒 <strong>「幽靈模式」</strong> (穿牆)。</li>
                             <li>連勝可獲大量金幣。</li>
-                            <li><strong>神秘果實：</strong> 30秒 <strong>「幽靈模式」</strong> (穿牆)。</li>
                         </ul>
                     </div>
                 </div>
@@ -423,15 +455,26 @@
         <div class="cyber-box p-4 min-w-[200px] bg-black/80">
             <div class="text-neon-blue font-cyber text-sm">OPERATOR</div>
             <div id="displayPlayer" class="text-xl font-bold text-white">---</div>
-            <div class="mt-2 text-neon-pink font-cyber text-sm">TARGET FLAG</div>
+            <div class="mt-2 text-neon-purple font-cyber text-sm">TARGET FLAG</div>
             <div class="text-4xl font-bold text-white flex items-center mt-1">
-                <i class="fas fa-flag mr-3 text-neon-pink"></i>
+                <i class="fas fa-flag mr-3 text-neon-purple"></i>
                 <span id="displayTarget" class="text-neon-yellow">1</span> <span class="text-xl text-gray-400 ml-2">/ 25</span>
             </div>
         </div>
 
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center w-1/3">
              <div id="countdownOverlay" class="hidden text-9xl font-cyber text-neon-yellow glitch font-bold drop-shadow-[0_0_15px_rgba(255,255,0,0.8)]" data-text="5">5</div>
+             <!-- HP Bar -->
+             <div class="w-full max-w-md mt-2">
+                 <div class="flex justify-between text-xs font-cyber mb-1">
+                     <span class="text-neon-green">SYSTEM INTEGRITY</span>
+                     <span id="hpText" class="text-white">100%</span>
+                 </div>
+                 <div class="hp-bar-container rounded">
+                     <div id="hpBar" class="hp-bar-fill" style="width: 100%;"></div>
+                 </div>
+                 <div id="hpWarning" class="hidden text-neon-red text-center text-sm font-bold mt-1 animate-pulse">WARNING: CRITICAL DAMAGE</div>
+             </div>
         </div>
 
         <div class="cyber-box green p-4 min-w-[200px] text-right bg-black/80">
@@ -455,7 +498,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
-    <!-- Quiz Modal (Optimized for Small Screens) -->
+    <!-- Quiz Modal -->
     <div id="quizModal" class="absolute inset-0 z-40 hidden items-center justify-center modal-overlay p-4">
         <div class="cyber-box p-6 w-full max-w-4xl bg-black relative flex flex-col quiz-modal-inner">
             <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
@@ -464,20 +507,20 @@
                 </h2>
                 <div class="text-right flex-shrink-0">
                     <div class="text-xs text-neon-pink font-cyber">TIME</div>
-                    <div id="quizTimer" class="text-4xl font-cyber text-neon-pink">20</div>
+                    <div id="quizTimer" class="text-4xl font-cyber text-neon-pink">30</div>
                 </div>
             </div>
             
-            <div id="quizContent" class="hidden flex-1 overflow-y-auto">
-                <p id="questionText" class="text-xl md:text-2xl mb-6 leading-relaxed font-bold text-white font-sans"></p>
-                <div id="optionsGrid" class="grid grid-cols-1 gap-3 mb-4">
+            <div id="quizContent" class="hidden flex-1 overflow-y-auto px-1">
+                <p id="questionText" class="text-lg md:text-xl mb-6 leading-relaxed font-bold text-white font-sans"></p>
+                <div id="optionsGrid" class="grid grid-cols-1 gap-3 mb-4 p-1">
                     <!-- Options injected here -->
                 </div>
                 <div id="feedbackArea" class="hidden text-center p-3 mb-4 rounded font-bold text-xl"></div>
-                <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold hover:scale-105 transform transition mb-2">
+                <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold mb-2">
                     CONTINUE MISSION / 繼續遊戲
                 </button>
-                <div class="text-gray-500 text-xs mt-2 text-center pb-2">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認</div>
+                <div class="text-gray-500 text-xs mt-2 text-center pb-2">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認 (滑鼠點擊亦可)</div>
             </div>
 
             <div id="quizCountdown" class="text-center py-20">
@@ -490,40 +533,44 @@
         </div>
     </div>
 
-    <!-- Game Over Screen -->
+    <!-- Game Over / Victory Screen -->
     <div id="endScreen" class="absolute inset-0 z-50 hidden flex-col items-center justify-center bg-black/95">
-        <div class="cyber-box green p-10 max-w-5xl w-full text-center max-h-[90vh] overflow-y-auto">
-            <h1 class="text-6xl font-cyber text-neon-green mb-4 glitch" data-text="MISSION COMPLETE">MISSION COMPLETE</h1>
+        <div class="cyber-box green p-8 max-w-4xl w-full text-center max-h-[90vh] overflow-y-auto">
+            <h1 id="endTitle" class="text-5xl font-cyber text-neon-green mb-4 glitch" data-text="MISSION COMPLETE">MISSION COMPLETE</h1>
             
-            <div class="grid grid-cols-3 gap-8 mb-8 mt-8">
-                <div class="bg-gray-900/80 p-6 rounded border border-gray-700">
-                    <div class="text-gray-400 text-sm mb-2">TOTAL SCORE</div>
-                    <div id="endScore" class="text-5xl text-neon-blue font-bold">0</div>
+            <div class="grid grid-cols-4 gap-4 mb-6 mt-4">
+                <div class="bg-gray-900/80 p-4 rounded border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">TOTAL SCORE</div>
+                    <div id="endScore" class="text-3xl text-neon-blue font-bold">0</div>
                 </div>
-                <div class="bg-gray-900/80 p-6 rounded border border-gray-700">
-                    <div class="text-gray-400 text-sm mb-2">ACCURACY</div>
-                    <div id="endAccuracy" class="text-5xl text-neon-pink font-bold">0%</div>
+                <div class="bg-gray-900/80 p-4 rounded border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">ACCURACY</div>
+                    <div id="endAccuracy" class="text-3xl text-neon-pink font-bold">0%</div>
                 </div>
-                <div class="bg-gray-900/80 p-6 rounded border border-gray-700">
-                    <div class="text-gray-400 text-sm mb-2">COINS</div>
-                    <div id="endCoins" class="text-5xl text-neon-yellow font-bold">0</div>
+                <div class="bg-gray-900/80 p-4 rounded border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">COINS</div>
+                    <div id="endCoins" class="text-3xl text-neon-yellow font-bold">0</div>
+                </div>
+                <div class="bg-gray-900/80 p-4 rounded border border-gray-700">
+                    <div class="text-gray-400 text-sm mb-1">HP BONUS</div>
+                    <div id="endHpBonus" class="text-3xl text-neon-green font-bold">0</div>
                 </div>
             </div>
 
-            <div id="rankDisplay" class="text-3xl font-bold mb-4 font-cyber"></div>
-            <div id="rankMessage" class="text-2xl text-red-400 mb-10 italic font-bold"></div>
+            <div id="rankDisplay" class="text-2xl font-bold mb-4 font-cyber"></div>
+            <div id="rankMessage" class="text-xl text-red-400 mb-6 italic font-bold"></div>
 
             <!-- Leaderboard -->
-            <div class="mb-8 bg-black/40 p-6 rounded border border-gray-800">
-                <h3 class="text-neon-blue font-cyber mb-4 text-xl">TOP 10 AGENTS</h3>
+            <div class="mb-6 bg-black/40 p-4 rounded border border-gray-800">
+                <h3 class="text-neon-blue font-cyber mb-2 text-lg">TOP 10 AGENTS</h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-lg">
+                    <table class="w-full text-left text-sm">
                         <thead class="text-gray-500 font-cyber border-b border-gray-700">
                             <tr>
-                                <th class="p-3">RANK</th>
-                                <th class="p-3">AGENT</th>
-                                <th class="p-3">CLASS</th>
-                                <th class="p-3">SCORE</th>
+                                <th class="p-2">RANK</th>
+                                <th class="p-2">AGENT</th>
+                                <th class="p-2">CLASS</th>
+                                <th class="p-2">SCORE</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboardBody" class="font-mono text-white">
@@ -533,7 +580,7 @@
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="cyber-btn px-16 py-4 text-2xl font-bold">
+            <button onclick="location.reload()" class="cyber-btn px-12 py-3 text-xl font-bold">
                 REBOOT SYSTEM
             </button>
         </div>
@@ -577,7 +624,6 @@
                 const playStep = () => {
                     if(!this.isPlaying) return;
                     const now = this.ctx.currentTime;
-                    // Bass
                     const bass = this.ctx.createOscillator();
                     const bassGain = this.ctx.createGain();
                     bass.type = 'triangle';
@@ -588,7 +634,6 @@
                     bassGain.connect(this.ctx.destination);
                     bass.start();
                     bass.stop(now + 0.2);
-                    // Melody
                     if(noteIndex % 2 === 0) {
                         const freq = melodyNotes[(noteIndex/2) % melodyNotes.length];
                         if(freq > 0) {
@@ -619,7 +664,8 @@
             correct: () => { AudioEngine.playTone(600, 'sine', 0.1); setTimeout(() => AudioEngine.playTone(900, 'sine', 0.4), 100); },
             wrong: () => { AudioEngine.playTone(150, 'sawtooth', 0.4); setTimeout(() => AudioEngine.playTone(100, 'sawtooth', 0.4), 200); },
             powerup: () => { [400, 500, 600, 800, 1000].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'square', 0.1), i * 50)); },
-            ghost: () => { AudioEngine.playTone(200, 'sine', 1.0); AudioEngine.playTone(205, 'sine', 1.0); }
+            ghost: () => { AudioEngine.playTone(200, 'sine', 1.0); AudioEngine.playTone(205, 'sine', 1.0); },
+            heal: () => { [400, 600, 800].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'sine', 0.2), i * 100)); } // Heal sound
         };
     </script>
 
@@ -630,6 +676,7 @@
         const ROWS = 24; 
         const TOTAL_FLAGS = 25;
         const BASE_SPEED = 160; 
+        const MAX_HP = 100;
         
         let player = { class: '', seat: '', name: '' };
         let gameActive = false;
@@ -641,6 +688,7 @@
         let score = 0;
         let coins = 0;
         let streak = 0;
+        let hp = MAX_HP;
         let questions = [];
         let items = [];
         let correctCount = 0;
@@ -649,10 +697,13 @@
         let ghostInterval;
         let quizTimeInterval;
         let walls = [];
+        let quizInputActive = false;
         
         function initGame() {
             const allQuestions = parseQuestions(RAW_PDF_TEXT);
             questions = getRandomQuestions(allQuestions, 25);
+            hp = MAX_HP;
+            updateHPUI();
             resetSnake();
             generateMap();
         }
@@ -668,7 +719,6 @@
             for(let i=0; i<60; i++) {
                 let wx = Math.floor(Math.random() * (COLS - 2)) + 1;
                 let wy = Math.floor(Math.random() * (ROWS - 2)) + 1;
-                // Avoid spawn area
                 if(wx < 10 && wy < 10) continue;
                 walls.push({x: wx, y: wy});
             }
@@ -698,7 +748,12 @@
         function spawnItem() {
             if(Math.random() > 0.4) { 
                 let pos = getValidPosition();
-                let type = Math.random() > 0.7 ? 'mystery' : 'food';
+                // 50% food, 30% mystery (gold), 20% heal (blue)
+                let rand = Math.random();
+                let type = 'food';
+                if(rand > 0.8) type = 'heal';
+                else if(rand > 0.5) type = 'mystery';
+                
                 items.push({x: pos.x, y: pos.y, type: type});
             }
         }
@@ -783,29 +838,35 @@
             if(head.y < 0) head.y = ROWS - 1;
             if(head.y >= ROWS) head.y = 0;
 
-            // 1. Self Collision
             if(snake.some(s => s.x === head.x && s.y === head.y)) {
-                handleDeath("咬到自己了！系統重置！");
+                handleDamage("咬到自己了！");
+                resetSnake(); // Reset position but keep HP loss
                 return;
             }
 
-            // 2. Wall Collision
             if(!ghostMode && walls.some(w => w.x === head.x && w.y === head.y)) { return; }
 
             snake.unshift(head);
 
-            // 3. Items
             let itemIndex = items.findIndex(i => i.x === head.x && i.y === head.y);
             if(itemIndex !== -1) {
                 let item = items[itemIndex];
                 items.splice(itemIndex, 1);
-                SFX.powerup();
-                if(item.type === 'mystery') { activateGhostMode(); } 
-                else { score += 50; coins += 5; }
+                
+                if(item.type === 'mystery') { 
+                    SFX.powerup();
+                    activateGhostMode(); 
+                } else if (item.type === 'heal') {
+                    SFX.heal();
+                    hp = Math.min(MAX_HP, hp + 20); // Heal 20%
+                    updateHPUI();
+                } else { 
+                    SFX.powerup();
+                    score += 50; coins += 5; 
+                }
                 updateHUD();
             }
 
-            // 4. Flags
             let hitFlag = flags.find(f => f.x === head.x && f.y === head.y);
             if(hitFlag) {
                 if(hitFlag.id === currentFlagTarget) {
@@ -819,13 +880,36 @@
             }
         }
 
-        function handleDeath(reason) {
-            score = Math.max(0, score - 200);
+        function handleDamage(reason, amount = 15) {
+            hp -= amount;
+            updateHPUI();
             streak = 0;
             SFX.wrong();
             updateHUD();
-            resetSnake(); // Completely reset snake to safe position
-            alert(reason + " (扣除 200 分)");
+            
+            if(hp <= 0) {
+                gameOver("SYSTEM FAILURE // 生命值歸零");
+            } else {
+                // Non-fatal damage warning?
+                // alert(reason + " 扣除生命值！"); // Removed to stop annoying loop
+            }
+        }
+
+        function updateHPUI() {
+            const bar = document.getElementById('hpBar');
+            const text = document.getElementById('hpText');
+            const warn = document.getElementById('hpWarning');
+            
+            bar.style.width = `${hp}%`;
+            text.textContent = `${hp}%`;
+            
+            if(hp <= 30) {
+                bar.classList.add('hp-critical');
+                warn.classList.remove('hidden');
+            } else {
+                bar.classList.remove('hp-critical');
+                warn.classList.add('hidden');
+            }
         }
 
         function activateGhostMode() {
@@ -842,7 +926,6 @@
             const ctx = cvs.getContext('2d');
             ctx.clearRect(0, 0, cvs.width, cvs.height);
 
-            // Walls
             ctx.fillStyle = ghostMode ? '#222' : '#1a1a1a';
             ctx.shadowBlur = 0;
             walls.forEach(w => {
@@ -851,21 +934,34 @@
                 ctx.strokeRect(w.x * GRID_SIZE, w.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
             });
 
-            // Items
             items.forEach(i => {
                 let cx = i.x * GRID_SIZE + GRID_SIZE/2;
                 let cy = i.y * GRID_SIZE + GRID_SIZE/2;
                 if(i.type === 'mystery') {
-                    ctx.fillStyle = '#fff';
-                    ctx.shadowColor = '#ff00ff';
-                    ctx.shadowBlur = 20;
+                    // Gold Mystery
+                    ctx.fillStyle = '#FFD700'; 
+                    ctx.shadowColor = '#FFA500'; 
+                    ctx.shadowBlur = 25;
                     ctx.beginPath();
                     for(let k=0; k<5; k++){
                         ctx.lineTo(Math.cos((18+k*72)/180*Math.PI)*10 + cx, -Math.sin((18+k*72)/180*Math.PI)*10 + cy);
                         ctx.lineTo(Math.cos((54+k*72)/180*Math.PI)*5 + cx, -Math.sin((54+k*72)/180*Math.PI)*5 + cy);
                     }
                     ctx.fill();
+                } else if (i.type === 'heal') {
+                    // Blue Heal
+                    ctx.fillStyle = '#00f3ff';
+                    ctx.shadowColor = '#00f3ff';
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 7, 0, Math.PI*2);
+                    ctx.fill();
+                    // Cross symbol
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(cx-2, cy-5, 4, 10);
+                    ctx.fillRect(cx-5, cy-2, 10, 4);
                 } else {
+                    // Red Food
                     ctx.fillStyle = '#ff3333';
                     ctx.shadowColor = '#ff0000';
                     ctx.shadowBlur = 10;
@@ -875,13 +971,12 @@
                 }
             });
 
-            // Flags
             flags.forEach(f => {
                 if(f.collected) return;
                 let isTarget = f.id === currentFlagTarget;
                 ctx.shadowBlur = isTarget ? 15 : 0;
-                ctx.shadowColor = isTarget ? '#ff00ff' : 'transparent';
-                ctx.fillStyle = isTarget ? '#ff00ff' : '#555';
+                ctx.shadowColor = isTarget ? '#bd00ff' : 'transparent';
+                ctx.fillStyle = isTarget ? '#bd00ff' : '#555';
                 ctx.fillRect(f.x * GRID_SIZE + 2, f.y * GRID_SIZE + 2, 4, 20); 
                 ctx.fillRect(f.x * GRID_SIZE + 6, f.y * GRID_SIZE + 2, 16, 12); 
                 ctx.fillStyle = '#fff';
@@ -889,7 +984,6 @@
                 ctx.fillText(f.id, f.x * GRID_SIZE + 8, f.y * GRID_SIZE + 13);
             });
 
-            // Snake
             snake.forEach((s, i) => {
                 let color = ghostMode ? `hsl(${Date.now() % 360}, 100%, 50%)` : '#0f0';
                 if(i === 0) color = '#fff';
@@ -906,6 +1000,7 @@
         let quizSelection = 0; 
 
         function startQuiz(flagId) {
+            quizInputActive = false; 
             const modal = document.getElementById('quizModal');
             const content = document.getElementById('quizContent');
             const countdown = document.getElementById('quizCountdown');
@@ -934,6 +1029,7 @@
         }
 
         function showQuestion() {
+            quizInputActive = true; 
             let qIndex = currentFlagTarget - 1;
             if(qIndex >= questions.length) qIndex = questions.length - 1;
             
@@ -952,6 +1048,7 @@
                 btn.dataset.key = key;
                 btn.onclick = () => confirmAnswer(key);
                 btn.onmouseenter = () => {
+                    if(!quizInputActive) return;
                     quizSelection = idx;
                     updateQuizSelection();
                     SFX.hover();
@@ -963,7 +1060,7 @@
             document.getElementById('continueBtn').classList.add('hidden');
             
             const qTimer = document.getElementById('quizTimer');
-            let timeLeft = 20;
+            let timeLeft = 30; 
             qTimer.textContent = timeLeft;
             
             if(quizTimeInterval) clearInterval(quizTimeInterval);
@@ -986,13 +1083,19 @@
             }
         }
 
+        let inputDebounce = false;
         function handleQuizInput(e) {
-            // Check if Continue Button is visible
+            if(!quizInputActive || inputDebounce) return;
+
             if(!document.getElementById('continueBtn').classList.contains('hidden')) {
-                // If continue button is visible, Enter OR Up/Down keys resume game
-                if(e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown') resumeGame();
+                if(e.key === 'Enter') {
+                    resumeGame();
+                }
                 return;
             }
+
+            inputDebounce = true;
+            setTimeout(() => inputDebounce = false, 100);
 
             if(e.key === 'ArrowUp') {
                 quizSelection--;
@@ -1013,24 +1116,30 @@
         }
 
         function handleAnswerTimeout() {
+            quizInputActive = false; 
             const feedback = document.getElementById('feedbackArea');
             const opts = document.getElementById('optionsGrid').children;
             for(let btn of opts) btn.onclick = null;
             
-            SFX.wrong();
-            feedback.textContent = `TIME OUT // 時間到 (正確答案: ${questions[currentFlagTarget - 1].answer})`;
-            feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
-            streak = 0;
-            score = Math.max(0, score - 50);
-            
-            feedback.classList.remove('hidden');
-            document.getElementById('continueBtn').classList.remove('hidden');
-            document.getElementById('continueBtn').focus(); // Auto focus for Enter key
-            updateHUD();
+            handleDamage("作答超時！", 20); // Penalty for timeout
+
+            if(hp > 0) {
+                SFX.wrong();
+                feedback.textContent = `TIME OUT // 時間到 (正確答案: ${questions[currentFlagTarget - 1].answer})`;
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
+                
+                feedback.classList.remove('hidden');
+                document.getElementById('continueBtn').classList.remove('hidden');
+                document.getElementById('continueBtn').focus();
+                updateHUD();
+                quizInputActive = true; 
+            }
         }
 
         function confirmAnswer(selected) {
+            if(!quizInputActive) return;
             clearInterval(quizTimeInterval);
+            quizInputActive = false; 
 
             let qIndex = currentFlagTarget - 1;
             const q = questions[qIndex];
@@ -1052,22 +1161,26 @@
                 coins += 50 + (streak * 10); 
                 if(correctCount % 5 === 0) { snake.push({...snake[snake.length-1]}); }
             } else {
+                handleDamage("答錯了！", 20); // Penalty for wrong answer
+                if(hp <= 0) return; // Game over handled in handleDamage
+
                 SFX.wrong();
                 feedback.textContent = `WRONG // 答案錯誤 (正確答案: ${correct})`;
                 feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
-                streak = 0;
-                score = Math.max(0, score - 50);
             }
             
             feedback.classList.remove('hidden');
             document.getElementById('continueBtn').classList.remove('hidden');
-            document.getElementById('continueBtn').focus(); // Focus button
+            document.getElementById('continueBtn').focus();
             updateHUD();
+            
+            setTimeout(() => quizInputActive = true, 500); 
         }
 
         function resumeGame() {
             document.getElementById('quizModal').classList.add('hidden');
             document.getElementById('quizModal').classList.remove('flex');
+            quizInputActive = false;
             
             let f = flags.find(flag => flag.id === currentFlagTarget);
             if(f) f.collected = true;
@@ -1078,7 +1191,7 @@
             spawnItem();
 
             if(currentFlagTarget > 25) {
-                endGame();
+                endGame(true); // Victory
             } else {
                 gameActive = true;
                 AudioEngine.playBGM();
@@ -1092,45 +1205,78 @@
             document.getElementById('displayStreak').textContent = `x${streak}`;
         }
 
-        function endGame() {
+        function gameOver(reason) {
             gameActive = false;
             AudioEngine.stopBGM();
+            SFX.wrong(); // Fail sound
+            
+            document.getElementById('quizModal').classList.add('hidden'); // Force close quiz if open
+            document.getElementById('quizModal').classList.remove('flex');
+
+            showEndScreen(false, reason);
+        }
+
+        function endGame(victory) {
+            gameActive = false;
+            AudioEngine.stopBGM();
+            if(victory) SFX.powerup(); 
+            showEndScreen(victory, "MISSION COMPLETE");
+        }
+
+        function showEndScreen(victory, title) {
             document.getElementById('hud').classList.add('hidden');
             document.getElementById('gameContainer').classList.add('hidden');
             document.getElementById('endScreen').classList.remove('hidden');
             document.getElementById('endScreen').classList.add('flex');
             document.getElementById('gameFooter').classList.remove('hidden-footer');
 
-            const acc = Math.round((correctCount / 25) * 100);
-            document.getElementById('endScore').textContent = score;
+            const titleEl = document.getElementById('endTitle');
+            titleEl.textContent = title;
+            titleEl.className = victory ? "text-5xl font-cyber text-neon-green mb-4 glitch" : "text-5xl font-cyber text-neon-red mb-4 glitch";
+            titleEl.setAttribute('data-text', title);
+
+            // Calc HP Bonus
+            let hpBonus = victory ? hp * 10 : 0;
+            let finalScore = score + hpBonus;
+
+            const acc = Math.round((correctCount / (victory ? 25 : currentFlagTarget)) * 100) || 0;
+            document.getElementById('endScore').textContent = finalScore;
             document.getElementById('endAccuracy').textContent = `${acc}%`;
             document.getElementById('endCoins').textContent = coins;
+            document.getElementById('endHpBonus').textContent = hpBonus;
 
             let rank = "ROOKIE (菜鳥)";
             let rankClass = "text-gray-400";
-            if(score >= 5000) { rank = "CYBER LEGEND (傳奇)"; rankClass = "text-neon-yellow"; }
-            else if(score >= 3500) { rank = "ELITE HACKER (菁英)"; rankClass = "text-neon-pink"; }
-            else if(score >= 2000) { rank = "SENIOR AGENT (資深)"; rankClass = "text-neon-green"; }
-            else { rank = "OPERATOR (操作員)"; rankClass = "text-neon-blue"; }
+            
+            if (!victory) {
+                rank = "MISSION FAILED";
+                rankClass = "text-neon-red";
+            } else {
+                if(finalScore >= 6000) { rank = "CYBER LEGEND (傳奇)"; rankClass = "text-neon-yellow"; }
+                else if(finalScore >= 4500) { rank = "ELITE HACKER (菁英)"; rankClass = "text-neon-purple"; }
+                else if(finalScore >= 3000) { rank = "SENIOR AGENT (資深)"; rankClass = "text-neon-green"; }
+                else { rank = "OPERATOR (操作員)"; rankClass = "text-neon-blue"; }
+            }
             
             const rDisplay = document.getElementById('rankDisplay');
             rDisplay.textContent = rank;
             rDisplay.className = `text-5xl font-bold mb-4 font-cyber ${rankClass} glitch`;
             rDisplay.dataset.text = rank;
 
-            if(score < 2000 || acc < 60) {
-                document.getElementById('rankMessage').textContent = "⚠️ 警告：核心數據同步率過低。請熟讀期末考題庫內容再來挑戰。";
+            const msg = document.getElementById('rankMessage');
+            if (!victory) {
+                msg.textContent = "警告：生命值歸零，請重新接受訓練！";
+            } else if(finalScore < 3000 || acc < 60) {
+                msg.textContent = "⚠️ 警告：核心數據同步率過低。請熟讀期末考題庫內容再來挑戰。";
             } else {
-                document.getElementById('rankMessage').textContent = "SYSTEM SYNC COMPLETE. 任務圓滿達成！";
+                msg.textContent = "SYSTEM SYNC COMPLETE. 任務圓滿達成！";
             }
-
-            SFX.powerup(); 
 
             const playerData = {
                 name: player.name,
                 class: player.class,
                 seat: player.seat,
-                score: score,
+                score: finalScore,
                 accuracy: acc,
                 coins: coins
             };
