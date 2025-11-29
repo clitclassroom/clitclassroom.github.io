@@ -51,6 +51,36 @@
             });
         };
 
+        // Live Leaderboard update
+        window.updateLiveLeaderboard = (data) => {
+            const liveBody = document.getElementById('liveLeaderboardList');
+            if(liveBody) {
+                liveBody.innerHTML = '';
+                data.slice(0, 10).forEach((d, i) => {
+                    const div = document.createElement('div');
+                    let rankColor = "text-gray-400";
+                    if(i===0) rankColor = "text-yellow-400";
+                    if(i===1) rankColor = "text-gray-300";
+                    if(i===2) rankColor = "text-orange-400";
+
+                    div.className = "flex justify-between items-center text-sm py-1 border-b border-gray-800/50";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="font-cyber font-bold w-6 ${rankColor}">#${i+1}</span>
+                            <span class="text-white truncate max-w-[80px]">${d.name}</span>
+                        </div>
+                        <span class="text-neon-blue font-mono">${d.score}</span>
+                    `;
+                    liveBody.appendChild(div);
+                });
+            }
+        };
+
+        window.updateAllLeaderboards = (data) => {
+            window.renderLeaderboard(data);
+            window.updateLiveLeaderboard(data);
+        };
+
         if (Object.keys(firebaseConfig).length > 0) {
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
@@ -78,7 +108,7 @@
 
             window.subscribeLeaderboard = () => {
                 if (!auth.currentUser) {
-                    window.renderLeaderboard(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
                     return;
                 }
                 const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard')); 
@@ -88,14 +118,14 @@
                         scores.push(doc.data());
                     });
                     if(scores.length === 0) {
-                        window.renderLeaderboard(MOCK_LEADERBOARD);
+                        window.updateAllLeaderboards(MOCK_LEADERBOARD);
                     } else {
                         scores.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
-                        window.renderLeaderboard(scores.slice(0, 10));
+                        window.updateAllLeaderboards(scores.slice(0, 10));
                     }
                 }, (error) => {
                     console.error("Leaderboard error:", error);
-                    window.renderLeaderboard(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
                 });
             };
             window.initFirebase();
@@ -103,21 +133,21 @@
             console.warn("Firebase config not found.");
             window.saveScore = () => {};
             window.subscribeLeaderboard = () => {
-                window.renderLeaderboard(MOCK_LEADERBOARD);
+                window.updateAllLeaderboards(MOCK_LEADERBOARD);
             };
         }
     </script>
 
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-purple: #9d00ff; /* Deep Purple */
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
             --neon-green: #0aff00;
             --neon-yellow: #fcee0a;
             --neon-gold: #FFD700;
             --neon-red: #ff003c;
             --bg-dark: #050505;
-            --glass: rgba(20, 20, 20, 0.9);
+            --glass: rgba(10, 10, 20, 0.95);
         }
 
         body {
@@ -133,80 +163,89 @@
             font-family: 'Orbitron', sans-serif;
         }
 
-        .text-neon-blue { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .text-neon-blue { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         .text-neon-purple { color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple); }
         .text-neon-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
         .text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
         
-        /* Updated Title Gradient: Light Blue to Deep Purple (No Red) */
-        .text-gradient-cool {
-            background: linear-gradient(to right, #00f3ff, #5d00ff);
-            background-size: 200% auto;
+        /* Updated Title Gradient: Cyber Code Style (Cyan to Purple) */
+        .text-gradient-cyber {
+            background: linear-gradient(to right, #00f3ff, #bc13fe);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-            animation: gradient-move 3s linear infinite;
-        }
-        @keyframes gradient-move {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+            font-weight: 900;
+            letter-spacing: 2px;
         }
 
         .cyber-box {
             background: var(--glass);
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 10px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 30px rgba(0, 243, 255, 0.1);
             position: relative;
-            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 
+                0 100%
+            );
         }
-        .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
-        .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(188, 19, 254, 0.3); }
+        .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(10, 255, 0, 0.3); }
         
         .cyber-btn {
             background: rgba(0, 243, 255, 0.1);
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
             font-family: 'Orbitron', sans-serif;
             transition: all 0.2s;
             cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); transform: scale(1.02); }
+        .cyber-btn:hover { 
+            background: var(--neon-cyan); 
+            color: #000; 
+            box-shadow: 0 0 20px var(--neon-cyan); 
+            transform: scale(1.02); 
+        }
         .cyber-btn:active { transform: scale(0.98); background: #fff; box-shadow: 0 0 30px #fff; }
 
         .cyber-input {
             background: rgba(0,0,0,0.7);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
             font-family: 'Orbitron', sans-serif;
         }
-        .cyber-input:focus { outline: none; box-shadow: 0 0 15px var(--neon-blue); }
+        .cyber-input:focus { outline: none; box-shadow: 0 0 15px var(--neon-cyan); }
 
         #gameCanvas {
             border: 2px solid #333;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
             background-color: #050505;
-            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
-        .modal-overlay { background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(8px); }
+        .modal-overlay { background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); }
 
         .glitch { position: relative; }
         .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .glitch::before { left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
-        .glitch::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        .glitch::before { left: 2px; text-shadow: -1px 0 #bc13fe; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 #00f3ff; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
         @keyframes glitch-anim { 0% { clip: rect(11px, 9999px, 81px, 0); } 100% { clip: rect(48px, 9999px, 54px, 0); } }
         @keyframes glitch-anim-2 { 0% { clip: rect(65px, 9999px, 100px, 0); } 100% { clip: rect(58px, 9999px, 66px, 0); } }
 
-        .answer-option { margin: 0 4px; }
+        .answer-option { margin: 0 4px; transition: all 0.2s; }
         .answer-option:hover, .answer-option.selected {
-            background: rgba(0, 243, 255, 0.2);
+            background: rgba(0, 243, 255, 0.15);
             border-color: var(--neon-yellow);
-            box-shadow: 0 0 15px var(--neon-yellow);
-            transform: scale(1.01);
+            box-shadow: 0 0 10px var(--neon-yellow);
+            transform: translateX(5px);
         }
 
         .ghost-mode { animation: flash 0.2s infinite; }
@@ -228,24 +267,27 @@
         /* Health Bar */
         .hp-bar-container {
             width: 100%;
-            height: 10px;
-            background: #333;
-            border: 1px solid #555;
+            height: 12px;
+            background: #222;
+            border: 1px solid #444;
             position: relative;
             overflow: hidden;
+            border-radius: 2px;
         }
         .hp-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, #00f3ff, #0aff00);
             transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
         .hp-critical {
             animation: hp-blink 0.5s infinite;
-            background: #ff003c !important;
+            background: linear-gradient(90deg, #ff003c, #ff5e00) !important;
+            box-shadow: 0 0 15px #ff003c;
         }
         @keyframes hp-blink {
             0% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
             100% { opacity: 1; }
         }
 
@@ -253,22 +295,30 @@
         #gameFooter { transition: opacity 0.5s; }
         #gameFooter.hidden-footer { opacity: 0; pointer-events: none; }
         
-        /* Quiz Modal Fixes */
-        .quiz-modal-inner { max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
+        /* Quiz Modal Fixes - Increased height */
+        .quiz-modal-inner { 
+            max-height: 90vh; /* Increased max height */
+            height: auto;
+            min-height: 60vh;
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+        }
         .quiz-modal-inner::-webkit-scrollbar { width: 6px; }
-        .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
+        .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
         .quiz-modal-inner::-webkit-scrollbar-track { background: #111; }
         
-        /* Result Block Visibility */
-        #feedbackArea {
-            min-height: 60px; /* Ensure space allocation */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Live Leaderboard Style */
+        #inGameLeaderboard {
+            pointer-events: none; 
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            border-left: 2px solid var(--neon-purple);
+            box-shadow: -5px 0 15px rgba(188, 19, 254, 0.2);
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col items-center justify-center">
+<body class="h-screen w-screen flex flex-col items-center justify-center bg-black overflow-hidden">
 
     <!-- DATA -->
     <script>
@@ -376,18 +426,12 @@
         function parseQuestions(text) {
             const questions = [];
             const regex = /(\d+)\.\s+([\s\S]+?)\s*\(A\)\s*([\s\S]+?)\s*\(B\)\s*([\s\S]+?)\s*\(C\)\s*([\s\S]+?)\s*\(D\)\s*([\s\S]+?)\s*《答案》\s*([A-D])/g;
-            
             let match;
             while ((match = regex.exec(text)) !== null) {
                 questions.push({
                     id: match[1],
                     question: match[2].trim(),
-                    options: { 
-                        A: match[3].trim(), 
-                        B: match[4].trim(), 
-                        C: match[5].trim(), 
-                        D: match[6].trim() 
-                    },
+                    options: { A: match[3].trim(), B: match[4].trim(), C: match[5].trim(), D: match[6].trim() },
                     answer: match[7].trim()
                 });
             }
@@ -400,14 +444,13 @@
         }
     </script>
 
-    <!-- Start Screen (Compact Layout) -->
+    <!-- Start Screen -->
     <div id="startScreen" class="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md overflow-y-auto py-8 pb-24">
         <div class="cyber-box purple flex flex-col md:flex-row max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
-            <!-- Left: Inputs (Smaller Font) -->
+            <!-- Left Panel -->
             <div class="w-full md:w-1/3 p-6 bg-black/50 flex flex-col justify-center border-b md:border-b-0 md:border-r border-gray-700">
-                <!-- Title Updated: Cool Gradient (Cyan-Purple) -->
-                <h1 class="text-4xl font-cyber text-gradient-cool mb-4 glitch text-center font-bold" data-text="CORE CODE: 資訊獵手">
-                    CORE CODE: 資訊獵手
+                <h1 class="text-4xl font-cyber text-gradient-cyber mb-4 glitch text-center" data-text="CORE CODE: INFO HUNTER">
+                    CORE CODE:<br>INFO HUNTER
                 </h1>
                 
                 <div class="space-y-4 my-4">
@@ -430,7 +473,7 @@
                 </button>
             </div>
 
-            <!-- Right: Rules -->
+            <!-- Right Panel: Rules -->
             <div class="w-full md:w-2/3 p-6 text-gray-300 overflow-y-auto bg-gray-900/30">
                 <h3 class="text-2xl text-neon-green font-bold mb-4 border-b border-gray-700 pb-2">/// MISSION BRIEFING ///</h3>
                 <div class="grid grid-cols-1 gap-4 text-sm">
@@ -440,6 +483,7 @@
                             <li>操控數據蛇尋找旗幟 <strong>1 - 25</strong> 進行答題。</li>
                             <li><strong>生命值歸零時，任務失敗，需重新開始！</strong></li>
                             <li><strong>咬到蛇尾</strong> 或 <strong>答錯題目</strong> 會扣除生命值。</li>
+                            <li><strong>答對題目</strong> 可微幅回復生命值 (+5%)。</li>
                         </ul>
                     </div>
                     <div>
@@ -459,6 +503,14 @@
         </div>
     </div>
 
+    <!-- Live Leaderboard -->
+    <div id="inGameLeaderboard" class="hidden absolute top-24 right-4 w-48 p-2 rounded z-30 flex flex-col gap-1 hidden lg:flex">
+        <div class="text-xs text-neon-purple font-cyber border-b border-purple-800 pb-1 mb-1 text-center">LIVE RANKING</div>
+        <div id="liveLeaderboardList" class="flex flex-col gap-1">
+            <div class="text-center text-gray-500 text-xs">LOADING...</div>
+        </div>
+    </div>
+
     <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none hidden z-20">
         <div class="cyber-box p-4 min-w-[200px] bg-black/80">
@@ -474,7 +526,7 @@
         <div class="flex flex-col items-center w-1/3">
              <div id="countdownOverlay" class="hidden text-9xl font-cyber text-neon-yellow glitch font-bold drop-shadow-[0_0_15px_rgba(255,255,0,0.8)]" data-text="5">5</div>
              <!-- HP Bar -->
-             <div class="w-full max-w-md mt-2">
+             <div class="w-full max-w-md mt-2 pointer-events-auto">
                  <div class="flex justify-between text-xs font-cyber mb-1">
                      <span class="text-neon-green">SYSTEM INTEGRITY</span>
                      <span id="hpText" class="text-white">100%</span>
@@ -525,14 +577,14 @@
                 <div id="optionsGrid" class="grid grid-cols-1 gap-3 mb-4 p-1">
                     <!-- Options injected here -->
                 </div>
-                <!-- Result & Continue Button Area -->
-                <div class="mt-auto">
+                <!-- Result & Continue Area - NOW ALWAYS VISIBLE IN DOM, HIDDEN BY CLASS -->
+                <div class="mt-auto pt-4 border-t border-gray-800">
                     <div id="feedbackArea" class="hidden text-center p-3 mb-4 rounded font-bold text-xl transition-all"></div>
                     <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold mb-2">
                         CONTINUE MISSION / 繼續遊戲
                     </button>
                 </div>
-                <div class="text-gray-500 text-xs mt-2 text-center pb-2 flex-shrink-0">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認 (滑鼠點擊亦可)</div>
+                <div class="text-gray-500 text-xs mt-2 text-center pb-2 flex-shrink-0">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認</div>
             </div>
 
             <div id="quizCountdown" class="text-center py-20">
@@ -545,7 +597,7 @@
         </div>
     </div>
 
-    <!-- Game Over / Victory Screen -->
+    <!-- Game Over Screen -->
     <div id="endScreen" class="absolute inset-0 z-50 hidden flex-col items-center justify-center bg-black/95">
         <div class="cyber-box green p-8 max-w-4xl w-full text-center max-h-[90vh] overflow-y-auto">
             <h1 id="endTitle" class="text-5xl font-cyber text-neon-green mb-4 glitch" data-text="MISSION COMPLETE">MISSION COMPLETE</h1>
@@ -677,7 +729,7 @@
             wrong: () => { AudioEngine.playTone(150, 'sawtooth', 0.4); setTimeout(() => AudioEngine.playTone(100, 'sawtooth', 0.4), 200); },
             powerup: () => { [400, 500, 600, 800, 1000].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'square', 0.1), i * 50)); },
             ghost: () => { AudioEngine.playTone(200, 'sine', 1.0); AudioEngine.playTone(205, 'sine', 1.0); },
-            heal: () => { [400, 600, 800].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'sine', 0.2), i * 100)); } // Heal sound
+            heal: () => { [400, 600, 800].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'sine', 0.2), i * 100)); } 
         };
     </script>
 
@@ -718,6 +770,7 @@
             updateHPUI();
             resetSnake();
             generateMap();
+            if(window.subscribeLeaderboard) window.subscribeLeaderboard();
         }
 
         function resetSnake() {
@@ -760,7 +813,6 @@
         function spawnItem() {
             if(Math.random() > 0.4) { 
                 let pos = getValidPosition();
-                // 50% food, 30% mystery (gold), 20% heal (blue)
                 let rand = Math.random();
                 let type = 'food';
                 if(rand > 0.8) type = 'heal';
@@ -787,6 +839,9 @@
             document.getElementById('gameFooter').classList.add('hidden-footer');
             document.getElementById('hud').classList.remove('hidden');
             document.getElementById('gameContainer').classList.remove('hidden');
+            
+            const liveLb = document.getElementById('inGameLeaderboard');
+            if(liveLb) liveLb.classList.remove('hidden');
 
             AudioEngine.playBGM(); 
             initGame();
@@ -852,7 +907,7 @@
 
             if(snake.some(s => s.x === head.x && s.y === head.y)) {
                 handleDamage("咬到自己了！");
-                resetSnake(); // Reset position but keep HP loss
+                resetSnake(); 
                 return;
             }
 
@@ -870,7 +925,7 @@
                     activateGhostMode(); 
                 } else if (item.type === 'heal') {
                     SFX.heal();
-                    hp = Math.min(MAX_HP, hp + 20); // Heal 20%
+                    hp = Math.min(MAX_HP, hp + 20); 
                     updateHPUI();
                 } else { 
                     SFX.powerup();
@@ -901,9 +956,6 @@
             
             if(hp <= 0) {
                 gameOver("SYSTEM FAILURE // 生命值歸零");
-            } else {
-                // Non-fatal damage warning?
-                // alert(reason + " 扣除生命值！"); // Removed to stop annoying loop
             }
         }
 
@@ -912,8 +964,8 @@
             const text = document.getElementById('hpText');
             const warn = document.getElementById('hpWarning');
             
-            bar.style.width = `${hp}%`;
-            text.textContent = `${hp}%`;
+            bar.style.width = `${Math.max(0, hp)}%`;
+            text.textContent = `${Math.max(0, hp)}%`;
             
             if(hp <= 30) {
                 bar.classList.add('hp-critical');
@@ -950,7 +1002,6 @@
                 let cx = i.x * GRID_SIZE + GRID_SIZE/2;
                 let cy = i.y * GRID_SIZE + GRID_SIZE/2;
                 if(i.type === 'mystery') {
-                    // Gold Mystery
                     ctx.fillStyle = '#FFD700'; 
                     ctx.shadowColor = '#FFA500'; 
                     ctx.shadowBlur = 25;
@@ -961,19 +1012,16 @@
                     }
                     ctx.fill();
                 } else if (i.type === 'heal') {
-                    // Blue Heal
                     ctx.fillStyle = '#00f3ff';
                     ctx.shadowColor = '#00f3ff';
                     ctx.shadowBlur = 15;
                     ctx.beginPath();
                     ctx.arc(cx, cy, 7, 0, Math.PI*2);
                     ctx.fill();
-                    // Cross symbol
                     ctx.fillStyle = '#fff';
                     ctx.fillRect(cx-2, cy-5, 4, 10);
                     ctx.fillRect(cx-5, cy-2, 10, 4);
                 } else {
-                    // Red Food
                     ctx.fillStyle = '#ff3333';
                     ctx.shadowColor = '#ff0000';
                     ctx.shadowBlur = 10;
@@ -1073,7 +1121,7 @@
             
             // Fix: Ensure feedback area scrolls into view when shown
             const quizModalInner = document.querySelector('.quiz-modal-inner');
-            quizModalInner.scrollTop = 0; // Reset scroll
+            quizModalInner.scrollTop = 0; 
 
             const qTimer = document.getElementById('quizTimer');
             let timeLeft = 30; 
@@ -1137,12 +1185,12 @@
             const opts = document.getElementById('optionsGrid').children;
             for(let btn of opts) btn.onclick = null;
             
-            handleDamage("作答超時！", 20); // Penalty for timeout
+            handleDamage("作答超時！", 20); 
 
             if(hp > 0) {
                 SFX.wrong();
                 feedback.textContent = `TIME OUT // 時間到 (正確答案: ${questions[currentFlagTarget - 1].answer})`;
-                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500 w-full";
                 
                 feedback.classList.remove('hidden');
                 document.getElementById('continueBtn').classList.remove('hidden');
@@ -1174,27 +1222,32 @@
             if(selected === correct) {
                 SFX.correct();
                 feedback.textContent = "CORRECT // 答案正確";
-                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-green-900/50 text-neon-green border border-green-500";
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-green-900/50 text-neon-green border border-green-500 w-full";
                 score += 100;
                 correctCount++;
                 streak++;
+                
+                // Heal on correct
+                hp = Math.min(MAX_HP, hp + 5);
+                updateHPUI();
+
                 if([3, 5, 10, 15, 20].includes(streak)) { score += streak * 50; }
                 coins += 50 + (streak * 10); 
                 if(correctCount % 5 === 0) { snake.push({...snake[snake.length-1]}); }
             } else {
-                handleDamage("答錯了！", 20); // Penalty for wrong answer
-                if(hp <= 0) return; // Game over handled in handleDamage
+                handleDamage("答錯了！", 20); 
+                if(hp <= 0) return; 
 
                 SFX.wrong();
                 feedback.textContent = `WRONG // 答案錯誤 (正確答案: ${correct})`;
-                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500 w-full";
             }
             
             feedback.classList.remove('hidden');
             document.getElementById('continueBtn').classList.remove('hidden');
             document.getElementById('continueBtn').focus();
             
-            // Force scroll to bottom to ensure feedback and button are visible
+            // Force scroll to bottom
             const quizModalInner = document.querySelector('.quiz-modal-inner');
             setTimeout(() => quizModalInner.scrollTop = quizModalInner.scrollHeight, 100);
 
@@ -1217,7 +1270,7 @@
             spawnItem();
 
             if(currentFlagTarget > 25) {
-                endGame(true); // Victory
+                endGame(true); 
             } else {
                 gameActive = true;
                 AudioEngine.playBGM();
@@ -1234,9 +1287,9 @@
         function gameOver(reason) {
             gameActive = false;
             AudioEngine.stopBGM();
-            SFX.wrong(); // Fail sound
+            SFX.wrong(); 
             
-            document.getElementById('quizModal').classList.add('hidden'); // Force close quiz if open
+            document.getElementById('quizModal').classList.add('hidden'); 
             document.getElementById('quizModal').classList.remove('flex');
 
             showEndScreen(false, reason);
@@ -1252,6 +1305,7 @@
         function showEndScreen(victory, title) {
             document.getElementById('hud').classList.add('hidden');
             document.getElementById('gameContainer').classList.add('hidden');
+            document.getElementById('inGameLeaderboard').classList.add('hidden'); 
             document.getElementById('endScreen').classList.remove('hidden');
             document.getElementById('endScreen').classList.add('flex');
             document.getElementById('gameFooter').classList.remove('hidden-footer');
@@ -1261,7 +1315,6 @@
             titleEl.className = victory ? "text-5xl font-cyber text-neon-green mb-4 glitch" : "text-5xl font-cyber text-neon-red mb-4 glitch";
             titleEl.setAttribute('data-text', title);
 
-            // Calc HP Bonus
             let hpBonus = victory ? hp * 10 : 0;
             let finalScore = score + hpBonus;
 
@@ -1307,10 +1360,8 @@
                 coins: coins
             };
             window.saveScore(playerData);
-            window.subscribeLeaderboard(updateLeaderboardUI);
+            window.subscribeLeaderboard(window.updateLeaderboards);
         }
-
-        function updateLeaderboardUI(data) { window.renderLeaderboard(data); }
     </script>
     
     <style>
