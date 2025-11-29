@@ -45,7 +45,7 @@
                     <td class="p-2 text-neon-blue font-cyber">#${i+1}</td>
                     <td class="p-2 text-white font-bold">${d.name}</td>
                     <td class="p-2 text-gray-400 font-mono text-sm">${d.class}-${d.seat}</td>
-                    <td class="p-2 text-neon-pink font-mono font-bold">${d.score}</td>
+                    <td class="p-2 text-neon-purple font-mono font-bold">${d.score}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -111,7 +111,7 @@
     <style>
         :root {
             --neon-blue: #00f3ff;
-            --neon-purple: #bd00ff;
+            --neon-purple: #9d00ff; /* Deep Purple */
             --neon-green: #0aff00;
             --neon-yellow: #fcee0a;
             --neon-gold: #FFD700;
@@ -138,19 +138,20 @@
         .text-neon-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
         .text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
         
-        /* Updated Title Gradient (No Pink) */
+        /* Updated Title Gradient: Light Blue to Deep Purple (No Red) */
         .text-gradient-cool {
-            background: linear-gradient(to right, #00f3ff, #bd00ff, #00f3ff);
+            background: linear-gradient(to right, #00f3ff, #5d00ff);
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
             animation: gradient-move 3s linear infinite;
         }
         @keyframes gradient-move {
             0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .cyber-box {
@@ -162,8 +163,7 @@
         }
         .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
         .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
-        .cyber-box.red { border-color: var(--neon-red); box-shadow: 0 0 10px var(--neon-red), inset 0 0 20px rgba(255, 0, 60, 0.2); }
-
+        
         .cyber-btn {
             background: rgba(0, 243, 255, 0.1);
             border: 2px solid var(--neon-blue);
@@ -254,10 +254,18 @@
         #gameFooter.hidden-footer { opacity: 0; pointer-events: none; }
         
         /* Quiz Modal Fixes */
-        .quiz-modal-inner { max-height: 80vh; overflow-y: auto; }
+        .quiz-modal-inner { max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
         .quiz-modal-inner::-webkit-scrollbar { width: 6px; }
         .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
         .quiz-modal-inner::-webkit-scrollbar-track { background: #111; }
+        
+        /* Result Block Visibility */
+        #feedbackArea {
+            min-height: 60px; /* Ensure space allocation */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col items-center justify-center">
@@ -437,6 +445,7 @@
                     <div>
                         <h4 class="text-neon-blue font-bold mb-1"><i class="fas fa-heartbeat"></i> 道具與獎勵</h4>
                         <ul class="list-disc list-inside space-y-1 text-gray-400">
+                            <li><strong>紅色數據點：</strong> 獲得基本分數與金幣。</li>
                             <li><strong>數據修復包 (藍色果實)：</strong> 隨機出現，吃到可恢復大量生命值。</li>
                             <li><strong>神秘果實 (金黃閃爍)：</strong> 30秒 <strong>「幽靈模式」</strong> (穿牆)。</li>
                             <li>連勝可獲大量金幣。</li>
@@ -501,7 +510,7 @@
     <!-- Quiz Modal -->
     <div id="quizModal" class="absolute inset-0 z-40 hidden items-center justify-center modal-overlay p-4">
         <div class="cyber-box p-6 w-full max-w-4xl bg-black relative flex flex-col quiz-modal-inner">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2 flex-shrink-0">
                 <h2 class="text-2xl font-cyber text-neon-blue truncate">
                     <i class="fas fa-terminal mr-2"></i>DECRYPTION
                 </h2>
@@ -511,16 +520,19 @@
                 </div>
             </div>
             
-            <div id="quizContent" class="hidden flex-1 overflow-y-auto px-1">
+            <div id="quizContent" class="hidden flex-1 overflow-y-auto px-1 flex flex-col">
                 <p id="questionText" class="text-lg md:text-xl mb-6 leading-relaxed font-bold text-white font-sans"></p>
                 <div id="optionsGrid" class="grid grid-cols-1 gap-3 mb-4 p-1">
                     <!-- Options injected here -->
                 </div>
-                <div id="feedbackArea" class="hidden text-center p-3 mb-4 rounded font-bold text-xl"></div>
-                <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold mb-2">
-                    CONTINUE MISSION / 繼續遊戲
-                </button>
-                <div class="text-gray-500 text-xs mt-2 text-center pb-2">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認 (滑鼠點擊亦可)</div>
+                <!-- Result & Continue Button Area -->
+                <div class="mt-auto">
+                    <div id="feedbackArea" class="hidden text-center p-3 mb-4 rounded font-bold text-xl transition-all"></div>
+                    <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold mb-2">
+                        CONTINUE MISSION / 繼續遊戲
+                    </button>
+                </div>
+                <div class="text-gray-500 text-xs mt-2 text-center pb-2 flex-shrink-0">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認 (滑鼠點擊亦可)</div>
             </div>
 
             <div id="quizCountdown" class="text-center py-20">
@@ -1043,7 +1055,7 @@
             ['A', 'B', 'C', 'D'].forEach((key, idx) => {
                 const btn = document.createElement('div');
                 btn.className = 'answer-option border border-cyan-500 p-3 rounded text-left text-lg relative cursor-pointer';
-                btn.innerHTML = `<span class="text-neon-pink font-bold mr-3 text-xl">${key}.</span> ${q.options[key]}`;
+                btn.innerHTML = `<span class="text-neon-purple font-bold mr-3 text-xl">${key}.</span> ${q.options[key]}`;
                 btn.dataset.idx = idx;
                 btn.dataset.key = key;
                 btn.onclick = () => confirmAnswer(key);
@@ -1059,6 +1071,10 @@
             document.getElementById('feedbackArea').classList.add('hidden');
             document.getElementById('continueBtn').classList.add('hidden');
             
+            // Fix: Ensure feedback area scrolls into view when shown
+            const quizModalInner = document.querySelector('.quiz-modal-inner');
+            quizModalInner.scrollTop = 0; // Reset scroll
+
             const qTimer = document.getElementById('quizTimer');
             let timeLeft = 30; 
             qTimer.textContent = timeLeft;
@@ -1131,6 +1147,11 @@
                 feedback.classList.remove('hidden');
                 document.getElementById('continueBtn').classList.remove('hidden');
                 document.getElementById('continueBtn').focus();
+                
+                // Force scroll to bottom
+                const quizModalInner = document.querySelector('.quiz-modal-inner');
+                setTimeout(() => quizModalInner.scrollTop = quizModalInner.scrollHeight, 100);
+
                 updateHUD();
                 quizInputActive = true; 
             }
@@ -1172,6 +1193,11 @@
             feedback.classList.remove('hidden');
             document.getElementById('continueBtn').classList.remove('hidden');
             document.getElementById('continueBtn').focus();
+            
+            // Force scroll to bottom to ensure feedback and button are visible
+            const quizModalInner = document.querySelector('.quiz-modal-inner');
+            setTimeout(() => quizModalInner.scrollTop = quizModalInner.scrollHeight, 100);
+
             updateHUD();
             
             setTimeout(() => quizInputActive = true, 500); 
