@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>核心代碼：資訊獵手 | Core Code: Info Hunter</title>
-    <!-- 1. 新增網站小圖示 -->
     <link rel="icon" type="image/png" href="img/favicon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +19,7 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
-        // Mock Leaderboard Data for display if DB is empty/loading
+        // Mock Leaderboard
         const MOCK_LEADERBOARD = [
             { name: "Neo", class: "901", seat: "01", score: 5200 },
             { name: "Trinity", class: "902", seat: "05", score: 4800 },
@@ -132,7 +131,6 @@
             font-family: 'Orbitron', sans-serif;
         }
 
-        /* Neon Effects */
         .text-neon-blue { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
         .text-neon-pink { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
         .text-neon-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
@@ -204,7 +202,7 @@
             filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 15px #ff00ff);
         }
 
-        /* Footer 樣式 */
+        /* Footer */
         #gameFooter {
             transition: opacity 0.5s;
         }
@@ -212,13 +210,22 @@
             opacity: 0;
             pointer-events: none;
         }
+        
+        /* Quiz Modal Fixes */
+        .quiz-modal-inner {
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        /* Custom scrollbar for modal */
+        .quiz-modal-inner::-webkit-scrollbar { width: 6px; }
+        .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
+        .quiz-modal-inner::-webkit-scrollbar-track { background: #111; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col items-center justify-center">
 
     <!-- DATA -->
     <script>
-        // Updated Question Bank: 49 Questions provided by user
         const RAW_PDF_TEXT = `
 1. 關於電腦中資料儲存單位的敘述，下列何者錯誤？ (A)最小的儲存單位為「位元組（byte）」 (B)1 byte＝8 bits (C)1 GB＝1024 MB (D)常見的儲存單位有KB、MB、GB、TB
 《答案》A
@@ -322,8 +329,6 @@
 
         function parseQuestions(text) {
             const questions = [];
-            // Relaxed regex to handle questions without initial brackets "()"
-            // Captures: 1. ID, 2. Question Text, 3. Opt A, 4. Opt B, 5. Opt C, 6. Opt D, 7. Answer
             const regex = /(\d+)\.\s+([\s\S]+?)\s*\(A\)\s*([\s\S]+?)\s*\(B\)\s*([\s\S]+?)\s*\(C\)\s*([\s\S]+?)\s*\(D\)\s*([\s\S]+?)\s*《答案》\s*([A-D])/g;
             
             let match;
@@ -344,19 +349,16 @@
         }
 
         function getRandomQuestions(allQuestions, count) {
-            // Shuffle all available questions then pick 'count'
             const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         }
     </script>
 
-    <!-- Start Screen (Compact Layout) -->
-    <!-- Updated with pb-24 to allow scrolling past footer -->
+    <!-- Start Screen -->
     <div id="startScreen" class="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md overflow-y-auto py-8 pb-24">
         <div class="cyber-box pink flex flex-col md:flex-row max-w-5xl w-full mx-4 overflow-hidden max-h-[90vh]">
-            <!-- Left: Inputs (Smaller Font) -->
+            <!-- Left: Inputs -->
             <div class="w-full md:w-1/3 p-6 bg-black/50 flex flex-col justify-center border-b md:border-b-0 md:border-r border-gray-700">
-                <!-- Title Updated: Removed "INITIALIZE SYSTEM" -->
                 <h1 class="text-4xl font-cyber text-neon-pink mb-4 glitch text-center" data-text="CORE CODE: 資訊獵手">
                     CORE CODE: 資訊獵手
                 </h1>
@@ -453,34 +455,34 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
 
-    <!-- Quiz Modal -->
-    <div id="quizModal" class="absolute inset-0 z-40 hidden items-center justify-center modal-overlay">
-        <div class="cyber-box p-8 max-w-4xl w-full mx-4 bg-black relative">
-            <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
-                <h2 class="text-3xl font-cyber text-neon-blue">
-                    <i class="fas fa-terminal mr-2"></i>DECRYPTION PROTOCOL
+    <!-- Quiz Modal (Optimized for Small Screens) -->
+    <div id="quizModal" class="absolute inset-0 z-40 hidden items-center justify-center modal-overlay p-4">
+        <div class="cyber-box p-6 w-full max-w-4xl bg-black relative flex flex-col quiz-modal-inner">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                <h2 class="text-2xl font-cyber text-neon-blue truncate">
+                    <i class="fas fa-terminal mr-2"></i>DECRYPTION
                 </h2>
-                <div class="text-right">
+                <div class="text-right flex-shrink-0">
                     <div class="text-xs text-neon-pink font-cyber">TIME</div>
-                    <div id="quizTimer" class="text-5xl font-cyber text-neon-pink">20</div>
+                    <div id="quizTimer" class="text-4xl font-cyber text-neon-pink">20</div>
                 </div>
             </div>
             
-            <div id="quizContent" class="hidden">
-                <p id="questionText" class="text-2xl md:text-3xl mb-8 leading-relaxed font-bold text-white font-sans"></p>
-                <div id="optionsGrid" class="grid grid-cols-1 gap-4 mb-6">
+            <div id="quizContent" class="hidden flex-1 overflow-y-auto">
+                <p id="questionText" class="text-xl md:text-2xl mb-6 leading-relaxed font-bold text-white font-sans"></p>
+                <div id="optionsGrid" class="grid grid-cols-1 gap-3 mb-4">
                     <!-- Options injected here -->
                 </div>
-                <div id="feedbackArea" class="hidden text-center p-4 mb-4 rounded font-bold text-2xl"></div>
-                <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-8 py-4 w-full text-2xl font-bold hover:scale-105 transform transition">
+                <div id="feedbackArea" class="hidden text-center p-3 mb-4 rounded font-bold text-xl"></div>
+                <button id="continueBtn" onclick="resumeGame()" class="hidden cyber-btn px-6 py-3 w-full text-xl font-bold hover:scale-105 transform transition mb-2">
                     CONTINUE MISSION / 繼續遊戲
                 </button>
-                <div class="text-gray-500 text-sm mt-4 text-center">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認</div>
+                <div class="text-gray-500 text-xs mt-2 text-center pb-2">提示：使用 ↑ ↓ 鍵選擇，Enter 鍵確認</div>
             </div>
 
             <div id="quizCountdown" class="text-center py-20">
-                <div class="text-6xl font-cyber text-neon-green mb-4">DECRYPTING...</div>
-                <div class="text-8xl font-cyber text-white mb-8" id="preQuizTimer">3</div>
+                <div class="text-5xl font-cyber text-neon-green mb-4">DECRYPTING...</div>
+                <div class="text-7xl font-cyber text-white mb-8" id="preQuizTimer">3</div>
                 <div class="loading-bar w-full h-2 bg-gray-800 rounded overflow-hidden">
                     <div class="h-full bg-neon-green w-0 animate-[load_3s_linear_forwards]"></div>
                 </div>
@@ -537,7 +539,7 @@
         </div>
     </div>
 
-    <!-- 2. Footer (Fixed Position) -->
+    <!-- Footer -->
     <footer id="gameFooter" class="fixed bottom-0 w-full p-4 text-center text-gray-500 text-sm z-50 bg-black/80 backdrop-blur-sm border-t border-gray-800 font-cyber">
         &copy; 2025 CLIT Classroom | 國中資訊科技
         <a href="https://clitclassroom.github.io/" target="_blank" class="ml-2 text-white hover:text-neon-blue transition-colors">
@@ -546,52 +548,35 @@
     </footer>
 
     <script>
-        // --- AUDIO ENGINE (BGM & SFX) ---
+        // --- AUDIO ENGINE ---
         const AudioEngine = {
             ctx: null,
-            bgmOscillators: [],
             isPlaying: false,
-            
-            init: function() {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            },
-
+            init: function() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
             playTone: function(freq, type, duration, vol=0.1) {
                 if (!this.ctx) this.init();
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                
                 gain.gain.setValueAtTime(vol, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start();
                 osc.stop(this.ctx.currentTime + duration);
             },
-
-            // Simple 8-bit Music Sequencer
             playBGM: function() {
                 if(this.isPlaying) return;
                 this.isPlaying = true;
                 if (!this.ctx) this.init();
-
-                // Simple Bassline Loop (Dragon Quest / Retro Style)
-                const bassNotes = [110, 110, 146, 146, 164, 164, 146, 146]; // A2, D3, E3...
-                const melodyNotes = [440, 0, 440, 493, 523, 493, 440, 392]; // A4...
+                const bassNotes = [110, 110, 146, 146, 164, 164, 146, 146];
+                const melodyNotes = [440, 0, 440, 493, 523, 493, 440, 392];
                 let noteIndex = 0;
-
                 const playStep = () => {
                     if(!this.isPlaying) return;
-
                     const now = this.ctx.currentTime;
-                    
                     // Bass
                     const bass = this.ctx.createOscillator();
                     const bassGain = this.ctx.createGain();
@@ -603,8 +588,7 @@
                     bassGain.connect(this.ctx.destination);
                     bass.start();
                     bass.stop(now + 0.2);
-
-                    // Melody (every other step)
+                    // Melody
                     if(noteIndex % 2 === 0) {
                         const freq = melodyNotes[(noteIndex/2) % melodyNotes.length];
                         if(freq > 0) {
@@ -620,16 +604,12 @@
                             mel.stop(now + 0.3);
                         }
                     }
-
                     noteIndex++;
-                    setTimeout(playStep, 200); // 120 BPM approx
+                    setTimeout(playStep, 200);
                 };
                 playStep();
             },
-
-            stopBGM: function() {
-                this.isPlaying = false;
-            }
+            stopBGM: function() { this.isPlaying = false; }
         };
 
         const SFX = {
@@ -638,28 +618,19 @@
             flag: () => { AudioEngine.playTone(1200, 'sine', 0.1); setTimeout(() => AudioEngine.playTone(1800, 'sine', 0.2), 100); },
             correct: () => { AudioEngine.playTone(600, 'sine', 0.1); setTimeout(() => AudioEngine.playTone(900, 'sine', 0.4), 100); },
             wrong: () => { AudioEngine.playTone(150, 'sawtooth', 0.4); setTimeout(() => AudioEngine.playTone(100, 'sawtooth', 0.4), 200); },
-            powerup: () => { 
-                [400, 500, 600, 800, 1000].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'square', 0.1), i * 50));
-            },
-            ghost: () => {
-                // Eerie sound
-                AudioEngine.playTone(200, 'sine', 1.0);
-                AudioEngine.playTone(205, 'sine', 1.0);
-            }
+            powerup: () => { [400, 500, 600, 800, 1000].forEach((f, i) => setTimeout(() => AudioEngine.playTone(f, 'square', 0.1), i * 50)); },
+            ghost: () => { AudioEngine.playTone(200, 'sine', 1.0); AudioEngine.playTone(205, 'sine', 1.0); }
         };
     </script>
 
     <script>
         // --- GAME LOGIC ---
-        
-        // Config
         const GRID_SIZE = 25; 
         const COLS = 32; 
         const ROWS = 24; 
         const TOTAL_FLAGS = 25;
-        const BASE_SPEED = 160; // Slower speed
+        const BASE_SPEED = 160; 
         
-        // State
         let player = { class: '', seat: '', name: '' };
         let gameActive = false;
         let snake = [];
@@ -673,29 +644,31 @@
         let questions = [];
         let items = [];
         let correctCount = 0;
-
-        // Features
         let ghostMode = false;
-        let ghostTimer = 0; // seconds
+        let ghostTimer = 0;
         let ghostInterval;
-        let quizTimeInterval; // For quiz timer
-
+        let quizTimeInterval;
         let walls = [];
         
         function initGame() {
             const allQuestions = parseQuestions(RAW_PDF_TEXT);
-            // Ensure we have 50 questions logic, pick 25
             questions = getRandomQuestions(allQuestions, 25);
-            
+            resetSnake();
+            generateMap();
+        }
+
+        function resetSnake() {
             snake = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}];
             direction = {x: 1, y: 0};
             nextDirection = {x: 1, y: 0};
-            
-            // Random walls
+        }
+
+        function generateMap() {
             walls = [];
             for(let i=0; i<60; i++) {
                 let wx = Math.floor(Math.random() * (COLS - 2)) + 1;
                 let wy = Math.floor(Math.random() * (ROWS - 2)) + 1;
+                // Avoid spawn area
                 if(wx < 10 && wy < 10) continue;
                 walls.push({x: wx, y: wy});
             }
@@ -705,7 +678,6 @@
                 let pos = getValidPosition();
                 flags.push({id: i, x: pos.x, y: pos.y, collected: false});
             }
-
             spawnItem();
         }
 
@@ -724,10 +696,8 @@
         }
 
         function spawnItem() {
-            // Chance for item
             if(Math.random() > 0.4) { 
                 let pos = getValidPosition();
-                // 30% chance for Mystery Fruit (Diamond)
                 let type = Math.random() > 0.7 ? 'mystery' : 'food';
                 items.push({x: pos.x, y: pos.y, type: type});
             }
@@ -747,13 +717,11 @@
             document.getElementById('displayPlayer').textContent = `${c}-${s} ${n}`;
             
             document.getElementById('startScreen').classList.add('hidden');
-            // Hide footer when game starts
             document.getElementById('gameFooter').classList.add('hidden-footer');
-
             document.getElementById('hud').classList.remove('hidden');
             document.getElementById('gameContainer').classList.remove('hidden');
 
-            AudioEngine.playBGM(); // Start Music
+            AudioEngine.playBGM(); 
             initGame();
             startCountdown();
         }
@@ -787,7 +755,6 @@
 
         document.addEventListener('keydown', e => {
             if(document.getElementById('quizModal').classList.contains('hidden')) {
-                // Game Controls
                 if(!gameActive) return;
                 switch(e.key) {
                     case 'ArrowUp': if(direction.y === 0) nextDirection = {x:0, y:-1}; break;
@@ -796,27 +763,21 @@
                     case 'ArrowRight': if(direction.x === 0) nextDirection = {x:1, y:0}; break;
                 }
             } else {
-                // Quiz Controls
                 handleQuizInput(e);
             }
         });
 
         function gameLoop() {
             if(!gameActive) return;
-            
             update();
             draw();
-            
-            setTimeout(() => {
-                requestAnimationFrame(gameLoop);
-            }, BASE_SPEED);
+            setTimeout(() => { requestAnimationFrame(gameLoop); }, BASE_SPEED);
         }
 
         function update() {
             direction = nextDirection;
             const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
 
-            // Wrap
             if(head.x < 0) head.x = COLS - 1;
             if(head.x >= COLS) head.x = 0;
             if(head.y < 0) head.y = ROWS - 1;
@@ -828,11 +789,8 @@
                 return;
             }
 
-            // 2. Wall Collision (Ignored if Ghost Mode)
-            if(!ghostMode && walls.some(w => w.x === head.x && w.y === head.y)) {
-                 // Stop moving
-                 return; 
-            }
+            // 2. Wall Collision
+            if(!ghostMode && walls.some(w => w.x === head.x && w.y === head.y)) { return; }
 
             snake.unshift(head);
 
@@ -842,12 +800,8 @@
                 let item = items[itemIndex];
                 items.splice(itemIndex, 1);
                 SFX.powerup();
-                if(item.type === 'mystery') {
-                    activateGhostMode();
-                } else {
-                    score += 50; // Regular food
-                    coins += 5;
-                }
+                if(item.type === 'mystery') { activateGhostMode(); } 
+                else { score += 50; coins += 5; }
                 updateHUD();
             }
 
@@ -861,8 +815,6 @@
                     startQuiz(hitFlag.id);
                 }
             } else {
-                // Remove tail if no growth logic triggered here
-                // Note: Growth happens on Answer Correct, not flag touch
                 snake.pop(); 
             }
         }
@@ -872,31 +824,26 @@
             streak = 0;
             SFX.wrong();
             updateHUD();
-            // Flash red effect on screen?
-            snake = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}]; // Respawn
+            resetSnake(); // Completely reset snake to safe position
             alert(reason + " (扣除 200 分)");
         }
 
         function activateGhostMode() {
             ghostMode = true;
             SFX.ghost();
-            // Set 30s timer
             clearTimeout(ghostInterval);
-            ghostInterval = setTimeout(() => {
-                ghostMode = false;
-            }, 30000);
-            score += 500; // Bonus for rare item
+            ghostInterval = setTimeout(() => { ghostMode = false; }, 30000);
+            score += 500;
             updateHUD();
         }
 
         function draw() {
             const cvs = document.getElementById('gameCanvas');
             const ctx = cvs.getContext('2d');
-
             ctx.clearRect(0, 0, cvs.width, cvs.height);
 
             // Walls
-            ctx.fillStyle = ghostMode ? '#222' : '#1a1a1a'; // Walls look dim in ghost mode
+            ctx.fillStyle = ghostMode ? '#222' : '#1a1a1a';
             ctx.shadowBlur = 0;
             walls.forEach(w => {
                 ctx.fillRect(w.x * GRID_SIZE, w.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
@@ -908,19 +855,14 @@
             items.forEach(i => {
                 let cx = i.x * GRID_SIZE + GRID_SIZE/2;
                 let cy = i.y * GRID_SIZE + GRID_SIZE/2;
-
                 if(i.type === 'mystery') {
-                    // Mystery Fruit (Glowing Star/Diamond)
                     ctx.fillStyle = '#fff';
                     ctx.shadowColor = '#ff00ff';
                     ctx.shadowBlur = 20;
                     ctx.beginPath();
-                    // Star shape
                     for(let k=0; k<5; k++){
-                        ctx.lineTo(Math.cos((18+k*72)/180*Math.PI)*10 + cx, 
-                                   -Math.sin((18+k*72)/180*Math.PI)*10 + cy);
-                        ctx.lineTo(Math.cos((54+k*72)/180*Math.PI)*5 + cx, 
-                                   -Math.sin((54+k*72)/180*Math.PI)*5 + cy);
+                        ctx.lineTo(Math.cos((18+k*72)/180*Math.PI)*10 + cx, -Math.sin((18+k*72)/180*Math.PI)*10 + cy);
+                        ctx.lineTo(Math.cos((54+k*72)/180*Math.PI)*5 + cx, -Math.sin((54+k*72)/180*Math.PI)*5 + cy);
                     }
                     ctx.fill();
                 } else {
@@ -936,16 +878,12 @@
             // Flags
             flags.forEach(f => {
                 if(f.collected) return;
-                
                 let isTarget = f.id === currentFlagTarget;
                 ctx.shadowBlur = isTarget ? 15 : 0;
                 ctx.shadowColor = isTarget ? '#ff00ff' : 'transparent';
                 ctx.fillStyle = isTarget ? '#ff00ff' : '#555';
-                
-                ctx.fillRect(f.x * GRID_SIZE + 2, f.y * GRID_SIZE + 2, 4, 20); // Pole
-                ctx.fillRect(f.x * GRID_SIZE + 6, f.y * GRID_SIZE + 2, 16, 12); // Banner
-                
-                // Number
+                ctx.fillRect(f.x * GRID_SIZE + 2, f.y * GRID_SIZE + 2, 4, 20); 
+                ctx.fillRect(f.x * GRID_SIZE + 6, f.y * GRID_SIZE + 2, 16, 12); 
                 ctx.fillStyle = '#fff';
                 ctx.font = 'bold 14px Arial';
                 ctx.fillText(f.id, f.x * GRID_SIZE + 8, f.y * GRID_SIZE + 13);
@@ -953,14 +891,11 @@
 
             // Snake
             snake.forEach((s, i) => {
-                // Ghost Mode: Flash colors
                 let color = ghostMode ? `hsl(${Date.now() % 360}, 100%, 50%)` : '#0f0';
                 if(i === 0) color = '#fff';
-
                 ctx.fillStyle = color;
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = color;
-                
                 if(ghostMode) ctx.globalAlpha = 0.6;
                 ctx.fillRect(s.x * GRID_SIZE + 1, s.y * GRID_SIZE + 1, GRID_SIZE - 2, GRID_SIZE - 2);
                 ctx.globalAlpha = 1.0;
@@ -968,8 +903,7 @@
         }
 
         // --- QUIZ LOGIC ---
-
-        let quizSelection = 0; // 0=A, 1=B, 2=C, 3=D
+        let quizSelection = 0; 
 
         function startQuiz(flagId) {
             const modal = document.getElementById('quizModal');
@@ -982,7 +916,6 @@
             content.classList.add('hidden');
             countdown.classList.remove('hidden');
             
-            // 3 second visual countdown to prepare user
             let count = 3;
             preQuizTimer.textContent = count;
             
@@ -1009,12 +942,12 @@
             
             const grid = document.getElementById('optionsGrid');
             grid.innerHTML = '';
-            quizSelection = -1; // No selection initially
+            quizSelection = -1;
 
             ['A', 'B', 'C', 'D'].forEach((key, idx) => {
                 const btn = document.createElement('div');
-                btn.className = 'answer-option border border-cyan-500 p-4 rounded text-left text-xl relative cursor-pointer';
-                btn.innerHTML = `<span class="text-neon-pink font-bold mr-4 text-2xl">${key}.</span> ${q.options[key]}`;
+                btn.className = 'answer-option border border-cyan-500 p-3 rounded text-left text-lg relative cursor-pointer';
+                btn.innerHTML = `<span class="text-neon-pink font-bold mr-3 text-xl">${key}.</span> ${q.options[key]}`;
                 btn.dataset.idx = idx;
                 btn.dataset.key = key;
                 btn.onclick = () => confirmAnswer(key);
@@ -1029,7 +962,6 @@
             document.getElementById('feedbackArea').classList.add('hidden');
             document.getElementById('continueBtn').classList.add('hidden');
             
-            // Start Quiz Timer Logic
             const qTimer = document.getElementById('quizTimer');
             let timeLeft = 20;
             qTimer.textContent = timeLeft;
@@ -1041,7 +973,6 @@
                 qTimer.textContent = timeLeft < 10 ? `0${timeLeft}` : timeLeft;
                 if(timeLeft <= 0) {
                     clearInterval(quizTimeInterval);
-                    // Time out handling: same as wrong answer
                     handleAnswerTimeout();
                 }
             }, 1000);
@@ -1056,10 +987,10 @@
         }
 
         function handleQuizInput(e) {
-            const opts = document.getElementById('optionsGrid').children;
-            if(document.getElementById('continueBtn').classList.contains('hidden') === false) {
-                // In result screen, Enter continues
-                if(e.key === 'Enter') resumeGame();
+            // Check if Continue Button is visible
+            if(!document.getElementById('continueBtn').classList.contains('hidden')) {
+                // If continue button is visible, Enter OR Up/Down keys resume game
+                if(e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown') resumeGame();
                 return;
             }
 
@@ -1084,22 +1015,22 @@
         function handleAnswerTimeout() {
             const feedback = document.getElementById('feedbackArea');
             const opts = document.getElementById('optionsGrid').children;
-            // Disable interactions
             for(let btn of opts) btn.onclick = null;
             
             SFX.wrong();
             feedback.textContent = `TIME OUT // 時間到 (正確答案: ${questions[currentFlagTarget - 1].answer})`;
-            feedback.className = "text-center p-4 mb-4 rounded font-bold text-2xl bg-red-900/50 text-red-500 border border-red-500";
+            feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
             streak = 0;
             score = Math.max(0, score - 50);
             
             feedback.classList.remove('hidden');
             document.getElementById('continueBtn').classList.remove('hidden');
+            document.getElementById('continueBtn').focus(); // Auto focus for Enter key
             updateHUD();
         }
 
         function confirmAnswer(selected) {
-            clearInterval(quizTimeInterval); // Stop timer
+            clearInterval(quizTimeInterval);
 
             let qIndex = currentFlagTarget - 1;
             const q = questions[qIndex];
@@ -1108,42 +1039,29 @@
             const feedback = document.getElementById('feedbackArea');
             const opts = document.getElementById('optionsGrid').children;
             
-            // Disable interactions
             for(let btn of opts) btn.onclick = null;
 
             if(selected === correct) {
                 SFX.correct();
                 feedback.textContent = "CORRECT // 答案正確";
-                feedback.className = "text-center p-4 mb-4 rounded font-bold text-2xl bg-green-900/50 text-neon-green border border-green-500";
-                
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-green-900/50 text-neon-green border border-green-500";
                 score += 100;
                 correctCount++;
                 streak++;
-                
-                // Bonus Logic
-                if([3, 5, 10, 15, 20].includes(streak)) {
-                    let bonus = streak * 50;
-                    score += bonus;
-                }
-                coins += 50 + (streak * 10); // Big coins
-
-                // Growth Logic (Every 5 correct answers)
-                if(correctCount % 5 === 0) {
-                    snake.push({...snake[snake.length-1]});
-                    // Show notification?
-                }
-
+                if([3, 5, 10, 15, 20].includes(streak)) { score += streak * 50; }
+                coins += 50 + (streak * 10); 
+                if(correctCount % 5 === 0) { snake.push({...snake[snake.length-1]}); }
             } else {
                 SFX.wrong();
                 feedback.textContent = `WRONG // 答案錯誤 (正確答案: ${correct})`;
-                feedback.className = "text-center p-4 mb-4 rounded font-bold text-2xl bg-red-900/50 text-red-500 border border-red-500";
+                feedback.className = "text-center p-3 mb-4 rounded font-bold text-xl bg-red-900/50 text-red-500 border border-red-500";
                 streak = 0;
-                // Penalty
                 score = Math.max(0, score - 50);
             }
             
             feedback.classList.remove('hidden');
             document.getElementById('continueBtn').classList.remove('hidden');
+            document.getElementById('continueBtn').focus(); // Focus button
             updateHUD();
         }
 
@@ -1163,7 +1081,7 @@
                 endGame();
             } else {
                 gameActive = true;
-                AudioEngine.playBGM(); // Resume Music
+                AudioEngine.playBGM();
                 gameLoop();
             }
         }
@@ -1181,11 +1099,9 @@
             document.getElementById('gameContainer').classList.add('hidden');
             document.getElementById('endScreen').classList.remove('hidden');
             document.getElementById('endScreen').classList.add('flex');
-            // Show footer in end screen
             document.getElementById('gameFooter').classList.remove('hidden-footer');
 
             const acc = Math.round((correctCount / 25) * 100);
-            
             document.getElementById('endScore').textContent = score;
             document.getElementById('endAccuracy').textContent = `${acc}%`;
             document.getElementById('endCoins').textContent = coins;
@@ -1210,7 +1126,6 @@
 
             SFX.powerup(); 
 
-            // Firebase
             const playerData = {
                 name: player.name,
                 class: player.class,
@@ -1223,11 +1138,7 @@
             window.subscribeLeaderboard(updateLeaderboardUI);
         }
 
-        function updateLeaderboardUI(data) {
-            // This is handled by subscribeLeaderboard's callback logic now, which uses window.renderLeaderboard if mock or real.
-            // But we keep this for consistency if called directly.
-            window.renderLeaderboard(data);
-        }
+        function updateLeaderboardUI(data) { window.renderLeaderboard(data); }
     </script>
     
     <style>
