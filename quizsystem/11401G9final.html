@@ -19,25 +19,18 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
-        // Mock Leaderboard
-        const MOCK_LEADERBOARD = [
-            { name: "Neo", class: "901", seat: "01", score: 5200 },
-            { name: "Trinity", class: "902", seat: "05", score: 4800 },
-            { name: "Morpheus", class: "903", seat: "10", score: 4500 },
-            { name: "Cipher", class: "901", seat: "12", score: 4100 },
-            { name: "Tank", class: "904", seat: "08", score: 3900 },
-            { name: "Dozer", class: "902", seat: "22", score: 3600 },
-            { name: "Switch", class: "905", seat: "15", score: 3200 },
-            { name: "Apoc", class: "903", seat: "07", score: 2800 },
-            { name: "Mouse", class: "901", seat: "30", score: 2500 },
-            { name: "Oracle", class: "999", seat: "00", score: 2000 }
-        ];
+        // MOCK_LEADERBOARD 已移除，確保只顯示真實玩家數據
 
         window.renderLeaderboard = (data) => {
             const tbody = document.getElementById('leaderboardBody');
             if(!tbody) return;
             tbody.innerHTML = '';
             
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">暫無排名資料 (NO DATA)</td></tr>';
+                return;
+            }
+
             data.forEach((d, i) => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-gray-800 hover:bg-gray-800/50";
@@ -56,6 +49,12 @@
             const liveBody = document.getElementById('liveLeaderboardList');
             if(liveBody) {
                 liveBody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    liveBody.innerHTML = '<div class="text-center text-gray-500 text-xs">NO DATA</div>';
+                    return;
+                }
+
                 data.slice(0, 10).forEach((d, i) => {
                     const div = document.createElement('div');
                     let rankColor = "text-gray-400";
@@ -108,7 +107,7 @@
 
             window.subscribeLeaderboard = () => {
                 if (!auth.currentUser) {
-                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards([]); // 未登入顯示空
                     return;
                 }
                 const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard')); 
@@ -118,14 +117,14 @@
                         scores.push(doc.data());
                     });
                     if(scores.length === 0) {
-                        window.updateAllLeaderboards(MOCK_LEADERBOARD);
+                        window.updateAllLeaderboards([]);
                     } else {
                         scores.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
                         window.updateAllLeaderboards(scores.slice(0, 10));
                     }
                 }, (error) => {
                     console.error("Leaderboard error:", error);
-                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards([]);
                 });
             };
             window.initFirebase();
@@ -133,7 +132,7 @@
             console.warn("Firebase config not found.");
             window.saveScore = () => {};
             window.subscribeLeaderboard = () => {
-                window.updateAllLeaderboards(MOCK_LEADERBOARD);
+                window.updateAllLeaderboards([]);
             };
         }
     </script>
@@ -610,6 +609,9 @@
     <div id="endScreen" class="absolute inset-0 z-50 hidden flex-col items-center justify-center bg-black/95">
         <div class="cyber-box green p-8 max-w-4xl w-full text-center max-h-[90vh] overflow-y-auto">
             <h1 id="endTitle" class="text-5xl font-cyber text-neon-green mb-4 glitch" data-text="MISSION COMPLETE">MISSION COMPLETE</h1>
+            
+            <!-- New Player Display -->
+            <div id="endPlayerDisplay" class="text-xl md:text-2xl text-white mb-4 font-bold border-b border-gray-700 pb-2 inline-block px-8"></div>
             
             <div class="grid grid-cols-4 gap-4 mb-6 mt-4">
                 <div class="bg-gray-900/80 p-4 rounded border border-gray-700">
@@ -1370,6 +1372,12 @@
             titleEl.textContent = title;
             titleEl.className = victory ? "text-5xl font-cyber text-neon-green mb-4 glitch" : "text-5xl font-cyber text-neon-red mb-4 glitch";
             titleEl.setAttribute('data-text', title);
+            
+            // Show Player Name on End Screen
+            const pInfo = document.getElementById('endPlayerDisplay');
+            if(pInfo) {
+                pInfo.textContent = `AGENT: ${player.class}-${player.seat} ${player.name}`;
+            }
 
             let hpBonus = victory ? hp * 10 : 0;
             let finalScore = score + hpBonus;
@@ -1417,7 +1425,7 @@
                 coins: coins
             };
             window.saveScore(playerData);
-            window.subscribeLeaderboard(window.updateLeaderboards);
+            window.subscribeLeaderboard();
         }
     </script>
     
