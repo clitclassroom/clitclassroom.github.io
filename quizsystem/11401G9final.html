@@ -33,26 +33,26 @@
             { name: "Oracle", class: "999", seat: "00", score: 2000 }
         ];
 
-        // Global function to update BOTH leaderboards (End screen & In-game)
-        window.updateLeaderboards = (data) => {
-            // 1. Update End Screen Table
+        window.renderLeaderboard = (data) => {
             const tbody = document.getElementById('leaderboardBody');
-            if(tbody) {
-                tbody.innerHTML = '';
-                data.forEach((d, i) => {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-gray-800 hover:bg-gray-800/50";
-                    tr.innerHTML = `
-                        <td class="p-2 text-neon-blue font-cyber">#${i+1}</td>
-                        <td class="p-2 text-white font-bold">${d.name}</td>
-                        <td class="p-2 text-gray-400 font-mono text-sm">${d.class}-${d.seat}</td>
-                        <td class="p-2 text-neon-purple font-mono font-bold">${d.score}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            data.forEach((d, i) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800 hover:bg-gray-800/50";
+                tr.innerHTML = `
+                    <td class="p-2 text-neon-blue font-cyber">#${i+1}</td>
+                    <td class="p-2 text-white font-bold">${d.name}</td>
+                    <td class="p-2 text-gray-400 font-mono text-sm">${d.class}-${d.seat}</td>
+                    <td class="p-2 text-neon-purple font-mono font-bold">${d.score}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
 
-            // 2. Update In-Game Live Leaderboard
+        // Live Leaderboard update
+        window.updateLiveLeaderboard = (data) => {
             const liveBody = document.getElementById('liveLeaderboardList');
             if(liveBody) {
                 liveBody.innerHTML = '';
@@ -74,6 +74,11 @@
                     liveBody.appendChild(div);
                 });
             }
+        };
+
+        window.updateAllLeaderboards = (data) => {
+            window.renderLeaderboard(data);
+            window.updateLiveLeaderboard(data);
         };
 
         if (Object.keys(firebaseConfig).length > 0) {
@@ -103,7 +108,7 @@
 
             window.subscribeLeaderboard = () => {
                 if (!auth.currentUser) {
-                    window.updateLeaderboards(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
                     return;
                 }
                 const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard')); 
@@ -113,14 +118,14 @@
                         scores.push(doc.data());
                     });
                     if(scores.length === 0) {
-                        window.updateLeaderboards(MOCK_LEADERBOARD);
+                        window.updateAllLeaderboards(MOCK_LEADERBOARD);
                     } else {
                         scores.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
-                        window.updateLeaderboards(scores.slice(0, 10));
+                        window.updateAllLeaderboards(scores.slice(0, 10));
                     }
                 }, (error) => {
                     console.error("Leaderboard error:", error);
-                    window.updateLeaderboards(MOCK_LEADERBOARD);
+                    window.updateAllLeaderboards(MOCK_LEADERBOARD);
                 });
             };
             window.initFirebase();
@@ -128,21 +133,21 @@
             console.warn("Firebase config not found.");
             window.saveScore = () => {};
             window.subscribeLeaderboard = () => {
-                window.updateLeaderboards(MOCK_LEADERBOARD);
+                window.updateAllLeaderboards(MOCK_LEADERBOARD);
             };
         }
     </script>
 
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-purple: #9d00ff; /* Deep Purple */
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
             --neon-green: #0aff00;
             --neon-yellow: #fcee0a;
             --neon-gold: #FFD700;
             --neon-red: #ff003c;
             --bg-dark: #050505;
-            --glass: rgba(20, 20, 20, 0.9);
+            --glass: rgba(10, 10, 20, 0.95);
         }
 
         body {
@@ -158,89 +163,90 @@
             font-family: 'Orbitron', sans-serif;
         }
 
-        .text-neon-blue { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .text-neon-blue { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         .text-neon-purple { color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple); }
         .text-neon-green { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
         .text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
         
-        /* Updated Title Gradient: Light Blue to Deep Purple (No Red) */
-        .text-gradient-cool {
-            background: linear-gradient(to right, #00f3ff, #5d00ff);
-            background-size: 200% auto;
+        .text-gradient-cyber {
+            background: linear-gradient(to right, #00f3ff, #bc13fe);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-            animation: gradient-move 3s linear infinite;
-        }
-        @keyframes gradient-move {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+            font-weight: 900;
+            letter-spacing: 2px;
         }
 
         .cyber-box {
             background: var(--glass);
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 10px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 30px rgba(0, 243, 255, 0.1);
             position: relative;
-            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 
+                0 100%
+            );
         }
-        .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple); }
-        .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .cyber-box.purple { border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(188, 19, 254, 0.3); }
+        .cyber-box.green { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(10, 255, 0, 0.3); }
         
         .cyber-btn {
             background: rgba(0, 243, 255, 0.1);
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
             font-family: 'Orbitron', sans-serif;
             transition: all 0.2s;
             cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); transform: scale(1.02); }
+        .cyber-btn:hover { 
+            background: var(--neon-cyan); 
+            color: #000; 
+            box-shadow: 0 0 20px var(--neon-cyan); 
+            transform: scale(1.02); 
+        }
         .cyber-btn:active { transform: scale(0.98); background: #fff; box-shadow: 0 0 30px #fff; }
 
         .cyber-input {
             background: rgba(0,0,0,0.7);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
             font-family: 'Orbitron', sans-serif;
         }
-        .cyber-input:focus { outline: none; box-shadow: 0 0 15px var(--neon-blue); }
+        .cyber-input:focus { outline: none; box-shadow: 0 0 15px var(--neon-cyan); }
 
         #gameCanvas {
             border: 2px solid #333;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
             background-color: #050505;
-            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
-        .modal-overlay { background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(8px); }
+        .modal-overlay { background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); }
 
         .glitch { position: relative; }
         .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .glitch::before { left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
-        .glitch::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        .glitch::before { left: 2px; text-shadow: -1px 0 #bc13fe; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 #00f3ff; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
         @keyframes glitch-anim { 0% { clip: rect(11px, 9999px, 81px, 0); } 100% { clip: rect(48px, 9999px, 54px, 0); } }
         @keyframes glitch-anim-2 { 0% { clip: rect(65px, 9999px, 100px, 0); } 100% { clip: rect(58px, 9999px, 66px, 0); } }
 
-        .answer-option { margin: 0 4px; }
+        .answer-option { margin: 0 4px; transition: all 0.2s; }
         .answer-option:hover, .answer-option.selected {
-            background: rgba(0, 243, 255, 0.2);
+            background: rgba(0, 243, 255, 0.15);
             border-color: var(--neon-yellow);
-            box-shadow: 0 0 15px var(--neon-yellow);
-            transform: scale(1.01);
+            box-shadow: 0 0 10px var(--neon-yellow);
+            transform: translateX(5px);
         }
 
-        .ghost-mode { animation: flash 0.2s infinite; }
-        @keyframes flash {
-            0% { opacity: 1; filter: brightness(1.5); }
-            50% { opacity: 0.3; filter: brightness(2); }
-            100% { opacity: 1; filter: brightness(1.5); }
-        }
-        
         .mystery-fruit-glow {
             filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 15px #FFA500);
             animation: pulse-glow 1s infinite alternate;
@@ -253,9 +259,9 @@
         /* Health Bar */
         .hp-bar-container {
             width: 100%;
-            height: 10px;
-            background: #333;
-            border: 1px solid #555;
+            height: 12px;
+            background: #222;
+            border: 1px solid #444;
             position: relative;
             overflow: hidden;
             border-radius: 2px;
@@ -273,7 +279,7 @@
         }
         @keyframes hp-blink {
             0% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
             100% { opacity: 1; }
         }
 
@@ -282,26 +288,26 @@
         #gameFooter.hidden-footer { opacity: 0; pointer-events: none; }
         
         /* Quiz Modal Fixes */
-        .quiz-modal-inner { max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .quiz-modal-inner { 
+            max-height: 90vh; /* Increased max height */
+            height: auto;
+            min-height: 60vh;
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+        }
         .quiz-modal-inner::-webkit-scrollbar { width: 6px; }
-        .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
+        .quiz-modal-inner::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
         .quiz-modal-inner::-webkit-scrollbar-track { background: #111; }
         
-        /* Result Block Visibility */
-        #feedbackArea {
-            min-height: 60px; /* Ensure space allocation */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Live Leaderboard Style */
+        /* Live Leaderboard Style - MOVED DOWN */
         #inGameLeaderboard {
-            pointer-events: none; /* Let clicks pass through */
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(2px);
-            border: 1px solid var(--neon-purple);
-            box-shadow: 0 0 10px rgba(157, 0, 255, 0.3);
+            pointer-events: none; 
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            border-left: 2px solid var(--neon-purple);
+            box-shadow: -5px 0 15px rgba(188, 19, 254, 0.2);
+            top: 200px; 
         }
     </style>
 </head>
@@ -470,8 +476,9 @@
                     <div>
                         <h4 class="text-neon-yellow font-bold mb-1"><i class="fas fa-gamepad"></i> 操作與規則</h4>
                         <ul class="list-disc list-inside space-y-1 text-gray-400">
-                            <li>操控數據蛇尋找旗幟 <strong>1 - 25</strong> 進行答題。</li>
+                            <li>操控數據蛇<strong>依序</strong>尋找旗幟 <strong>1 - 25</strong> 進行答題。</li>
                             <li><strong>生命值歸零時，任務失敗，需重新開始！</strong></li>
+                            <li><strong>每答對 5 題</strong>，數據蛇的身長會增加。</li>
                             <li><strong>咬到蛇尾</strong> 或 <strong>答錯題目</strong> 會扣除生命值。</li>
                             <li><strong>答對題目</strong> 可微幅回復生命值 (+5%)。</li>
                         </ul>
@@ -741,7 +748,7 @@
         const COLS = 32; 
         const ROWS = 24; 
         const TOTAL_FLAGS = 25;
-        const BASE_SPEED = 220; 
+        const BASE_SPEED = 250; 
         const MAX_HP = 100;
         
         let player = { class: '', seat: '', name: '' };
@@ -964,6 +971,10 @@
                     startQuiz(hitFlag.id);
                 }
             } else {
+                // Growth logic here? No, growth is on correct answer.
+                // So always pop unless we JUST ate food? 
+                // Currently design is: snake size constant unless quiz correct.
+                // So always pop here.
                 snake.pop(); 
             }
         }
@@ -1121,10 +1132,21 @@
 
         function showQuestion() {
             quizInputActive = true; 
+            // Fix: Use currentFlagTarget - 1 to get correct index
             let qIndex = currentFlagTarget - 1;
-            if(qIndex >= questions.length) qIndex = questions.length - 1;
+            // The questions array is only 25 items long, so index 0-24. 
+            // currentFlagTarget goes from 1 to 25.
+            // If currentFlagTarget is 1, index is 0. 
+            // Logic is sound, but we must ensure questions array has correct data.
             
             const q = questions[qIndex];
+            // Safety check in case q is undefined
+            if (!q) {
+                console.error("Question not found for index:", qIndex);
+                resumeGame();
+                return;
+            }
+
             document.getElementById('questionText').textContent = `Q${currentFlagTarget}. ${q.question}`;
             
             const grid = document.getElementById('optionsGrid');
@@ -1147,12 +1169,9 @@
                 grid.appendChild(btn);
             });
             
-            document.getElementById('feedbackArea').classList.add('hidden');
-            document.getElementById('continueBtn').classList.add('hidden');
-            
             // Fix: Ensure feedback area scrolls into view when shown
             const quizModalInner = document.querySelector('.quiz-modal-inner');
-            quizModalInner.scrollTop = 0; 
+            if(quizModalInner) quizModalInner.scrollTop = 0; 
 
             const qTimer = document.getElementById('quizTimer');
             let timeLeft = 30; 
@@ -1265,7 +1284,10 @@
 
                 if([3, 5, 10, 15, 20].includes(streak)) { score += streak * 50; }
                 coins += 50 + (streak * 10); 
-                if(correctCount % 5 === 0) { snake.push({...snake[snake.length-1]}); }
+                // Growth: every 5 correct answers
+                if(correctCount % 5 === 0) { 
+                    snake.push({...snake[snake.length-1]}); 
+                }
             } else {
                 SFX.wrong();
                 icon.innerHTML = '<i class="fas fa-times-circle text-neon-red"></i>';
@@ -1282,6 +1304,10 @@
         }
 
         function resumeGame() {
+            // FIX: Prevent double-firing (Enter key + Button click)
+            // If the modal is already hidden, it means resumeGame was just called.
+            if(document.getElementById('quizModal').classList.contains('hidden')) return;
+
             // If HP <= 0, game over handles transition
             if(hp <= 0) return;
 
@@ -1293,6 +1319,7 @@
             if(f) f.collected = true;
             
             currentFlagTarget++;
+            // Fix: ensure display stays in bounds
             document.getElementById('displayTarget').textContent = currentFlagTarget <= 25 ? currentFlagTarget : 25;
 
             // Spawn new items on resume to keep map busy
@@ -1347,7 +1374,8 @@
             let hpBonus = victory ? hp * 10 : 0;
             let finalScore = score + hpBonus;
 
-            const acc = Math.round((correctCount / (victory ? 25 : currentFlagTarget)) * 100) || 0;
+            // Updated Accuracy Calculation: (Correct Count / 25) * 100
+            const acc = Math.round((correctCount / 25) * 100);
             document.getElementById('endScore').textContent = finalScore;
             document.getElementById('endAccuracy').textContent = `${acc}%`;
             document.getElementById('endCoins').textContent = coins;
