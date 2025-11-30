@@ -9,6 +9,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700;900&family=Orbitron:wght@400;700;900&display=swap');
 
         :root {
+            /* 請在此處修改起始畫面的背景顏色以匹配目標網頁 */
+            --site-bg-color: #2c3e50; /* 預設：深藍灰色 (Dark Slate) */
+            
             --bg-color: #050510;
             --neon-green: #0f0;
             --neon-blue: #00f3ff;
@@ -71,6 +74,12 @@
             backdrop-filter: blur(5px);
             z-index: 20;
             transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* 特別針對起始畫面設定背景色 */
+        #start-screen {
+            background-color: var(--site-bg-color); /* 使用自定義背景色 */
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)); /* 輕微的暗角效果 */
         }
 
         .hidden {
@@ -422,14 +431,14 @@
                 <li><strong>攻擊：</strong> 滑鼠左鍵點擊怪物</li>
                 <li><strong>防禦：</strong> 空白鍵 (Space)</li>
                 <li><strong>升級：</strong> 點擊空中飄過的寶箱 (+ATK)</li>
-                <li><strong>目標：</strong> 消滅 80% 怪物並通過檢測</li>
+                <li><strong>目標：</strong> 消滅所有怪物並通過檢測</li>
             </ul>
         </div>
 
         <!-- Start Screen -->
         <div id="start-screen" class="ui-layer">
             <h1 class="glitch-title" data-text="PIXEL ALGO HEROES">PIXEL ALGO HEROES</h1>
-            <div class="subtitle">星際演算法英雄 // 學習檢測系統 v2.3</div>
+            <div class="subtitle">星際演算法英雄 // 學習檢測系統 v2.6</div>
             
             <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                 
@@ -559,7 +568,7 @@
         const CONFIG = {
             totalLevels: 5,
             passThreshold: 2,
-            killRatio: 0.8,
+            killRatio: 1, // Set to 100% (All enemies)
             baseEnemies: 4,
             enemyGrowth: 3, 
             playerSpeed: 5,
