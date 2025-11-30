@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位情報解碼：演算法特攻 (V1.0.2)</title>
+    <title>數位情報解碼：演算法特攻 (V1.0.3)</title>
     
     <!-- 新增網站小圖示 -->
     <link rel="icon" type="image/png" href="img/favicon.png">
@@ -326,7 +326,7 @@
             );
         };
 
-        // --- Module: Mind Map (New!) ---
+        // --- Module: Mind Map ---
         const ModuleMindMap = () => {
             const [selectedNode, setSelectedNode] = useState(null);
 
@@ -688,6 +688,43 @@
             );
         };
 
+        // --- Module 4: Assessment System (New!) ---
+        const ModuleAssessment = () => {
+            return (
+                <div className="space-y-8 animate-float">
+                    <div className="bg-cyber-panel border border-cyber-pink p-6 rounded-lg relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-2 text-xs font-mono text-cyber-pink/50">SYSTEM: ASSESSMENT</div>
+                        <h2 className="text-2xl font-bold text-cyber-pink mb-4 flex items-center gap-2">
+                            <i className="ph ph-target"></i> 任務四：學習檢測系統
+                        </h2>
+                        <p className="text-gray-300 leading-relaxed mb-6">
+                            特務，你已經掌握了演算法的基礎情報。現在是驗收成果的時候了！
+                            <br/>
+                            進入模擬戰場，測試你的反應與邏輯能力。
+                        </p>
+                        
+                        <div className="flex justify-center items-center py-12 bg-black/40 rounded border border-gray-700">
+                            <a 
+                                href="https://clitclassroom.github.io/algorithm/algogame.html" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="group relative px-8 py-4 bg-purple-900/20 border border-cyber-pink text-cyber-pink font-mono font-bold text-xl rounded hover:bg-cyber-pink hover:text-black transition-all duration-300 shadow-[0_0_20px_#bc13fe30] hover:shadow-[0_0_40px_#bc13fe80]"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <i className="ph ph-rocket-launch text-2xl animate-pulse"></i>
+                                    啟動檢測系統 (LAUNCH)
+                                </span>
+                                <div className="absolute inset-0 border border-white/20 scale-105 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 rounded"></div>
+                            </a>
+                        </div>
+                        <p className="text-center text-xs text-gray-500 mt-4 font-mono">
+                            WARNING: EXTERNAL SIMULATION LINK DETECTED.
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
         // --- Main App Component ---
         const App = () => {
             const [currentModule, setCurrentModule] = useState(0);
@@ -697,6 +734,7 @@
                 { id: 'basics', label: '演算法基礎', icon: 'ph-code', component: <ModuleBasics /> },
                 { id: 'flow', label: '流程圖符號', icon: 'ph-graph', component: <ModuleFlowchart /> },
                 { id: 'struct', label: '三大結構', icon: 'ph-tree-structure', component: <ModuleStructures /> },
+                { id: 'assessment', label: '學習檢測系統', icon: 'ph-target', component: <ModuleAssessment /> },
             ];
 
             return (
@@ -713,7 +751,7 @@
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold italic tracking-tighter text-white glitch" data-text="數位情報解碼">數位情報解碼</h1>
-                                    <p className="text-xs text-cyber-blue font-mono tracking-widest">ALGORITHM_DECODER_V1.0.2</p>
+                                    <p className="text-xs text-cyber-blue font-mono tracking-widest">ALGORITHM_DECODER_V1.0.3</p>
                                 </div>
                             </div>
                             <div className="hidden md:block text-xs font-mono text-gray-500">
