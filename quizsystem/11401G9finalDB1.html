@@ -125,6 +125,8 @@
                 };
 
                 window.subscribeLeaderboard = () => {
+                    // *** 在這裡加入您的 console.log ***
+                    console.log("即時排名監聽器已啟動！"); // <-- 請將這行加在這裡
                     const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard')); 
                     return onSnapshot(q, (snapshot) => {
                         const scores = [];
@@ -1451,3 +1453,4 @@
 </body>
 
 </html>
+
