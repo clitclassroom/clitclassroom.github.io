@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
-    <!-- Firebase Imports -->
+   <!-- Firebase Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -24,14 +24,17 @@
             projectId: "mygamerankingsystem",
             storageBucket: "mygamerankingsystem.firebasestorage.app",
             messagingSenderId: "481925091360",
-            appId: "1:481925091360:web:cb874f26016701a633ac45",
+            appId: "1:481925091360:web:cb874f26016701a633ac45", // <-- 您的真實 App ID
             measurementId: "G-69FTKRQ2E0"
         };
         
         // 環境變數檢測 (預覽環境用，若無則使用 customConfig)
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const firebaseConfig = Object.keys(envConfig).length > 0 ? envConfig : customConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // **重要修正**：確保 appId 變數始終使用 firebaseConfig 中的真實 appId
+        // 這樣可以避免 'default-app-id' 導致的路徑不匹配問題
+        const actualAppId = firebaseConfig.appId; 
 
         // Mock Data (僅在連線失敗或無資料時備用顯示)
         const MOCK_LEADERBOARD = [
@@ -114,27 +117,37 @@
                 window.saveScore = async (playerData) => {
                     if (!auth.currentUser) return;
                     try {
-                        // 使用統一的路徑結構
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), {
+                        // **重要修正**：使用 actualAppId
+                        await addDoc(collection(db, 'artifacts', actualAppId, 'public', 'data', 'leaderboard'), {
                             ...playerData,
                             timestamp: serverTimestamp()
                         });
+                        console.log("分數已成功寫入 Firestore:", playerData); // 新增 log
                     } catch (e) {
                         console.error("Error adding score: ", e);
                     }
                 };
 
                 window.subscribeLeaderboard = () => {
-                    // *** 在這裡加入您的 console.log ***
-                    console.log("即時排名監聽器已啟動！"); // <-- 請將這行加在這裡
-                    const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard')); 
+                    console.log("即時排名監聽器已啟動！"); 
+                    // **重要修正**：在查詢中加入 orderBy 來直接從 Firestore 獲取排序好的資料
+                    const q = query(
+                        collection(db, 'artifacts', actualAppId, 'public', 'data', 'leaderboard'), // **重要修正**：使用 actualAppId
+                        orderBy('score', 'desc'), // 假設您想按分數降序排列
+                        // 您可以根據需要加上 limit(10) 來只獲取前10名
+                        // limit(10) 
+                    ); 
                     return onSnapshot(q, (snapshot) => {
                         const scores = [];
+                        console.log(`監聽器收到 ${snapshot.docs.length} 筆資料更新.`); // 新增 log
                         snapshot.forEach((doc) => {
-                            scores.push(doc.data());
+                            const data = doc.data();
+                            scores.push(data);
+                            // console.log("收到單筆分數資料:", data); // 如果資料很多，這行可能會洗版，但用於測試很方便
                         });
-                        // Sort locally
-                        scores.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
+                        
+                        // 由於查詢已經排序，這裡的本地排序可以省略或簡化，但保留也無妨
+                        // scores.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
                         
                         // 更新畫面
                         window.renderLeaderboard(scores.slice(0, 10));
@@ -161,6 +174,7 @@
             window.subscribeLeaderboard();
         }
     </script>
+
 
     <style>
         :root {
@@ -1453,4 +1467,5 @@
 </body>
 
 </html>
+
 
