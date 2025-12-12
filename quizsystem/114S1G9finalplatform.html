@@ -104,22 +104,22 @@
         // --- Footer Component ---
         const Footer = () => (
             <footer className="mt-auto py-6 border-t border-base-800 bg-base-900/50 backdrop-blur-sm text-center relative z-10 w-full shrink-0">
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-1">
                     <p className="text-gray-500 text-sm font-medium tracking-wide">
                         © 2025 CLIT Classroom | 國中資訊科技
                     </p>
-                    <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">
-                        Content: Quiz System
-                    </p>
-                    <a 
-                        href="https://clitclassroom.github.io/" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-primary-400 transition-all duration-300 transform hover:scale-110 hover:rotate-6"
-                        title="Visit Github"
-                    >
-                       <Icons.Github />
-                    </a>
+                    <div className="flex items-center gap-3 justify-center text-gray-600 text-xs uppercase tracking-wider">
+                        <span>Content: Quiz System</span>
+                        <a 
+                            href="https://clitclassroom.github.io/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-500 hover:text-primary-400 transition-all duration-300 transform hover:scale-110 hover:rotate-6"
+                            title="Visit Github"
+                        >
+                           <Icons.Github />
+                        </a>
+                    </div>
                 </div>
             </footer>
         );
