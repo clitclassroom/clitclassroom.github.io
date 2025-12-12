@@ -195,9 +195,33 @@
             };
 
             const parseCSV = (csvText) => {
-                const lines = csvText.split('\n');
+                // ★★★ 核心修正：更強大的 CSV 解析器，支援儲存格內換行 ★★★
+                const lines = [];
+                let currentBuffer = '';
+                const rawLines = csvText.trim().replace(/^\uFEFF/, '').split(/\r\n|\n/);
+
+                for (let i = 0; i < rawLines.length; i++) {
+                    const line = rawLines[i];
+                    // 將當前行加入緩衝區 (如果不是第一行，要補回換行符)
+                    currentBuffer += (currentBuffer ? '\n' : '') + line;
+                    
+                    // 計算緩衝區內的雙引號數量
+                    const quoteMatches = currentBuffer.match(/"/g);
+                    const quoteCount = quoteMatches ? quoteMatches.length : 0;
+
+                    // 如果雙引號數量是偶數，表示這個 Row 已經完整閉合
+                    if (quoteCount % 2 === 0) {
+                        lines.push(currentBuffer);
+                        currentBuffer = '';
+                    }
+                    // 如果是奇數，表示還有引號沒閉合 (跨行內容)，繼續讀下一行
+                }
+
                 const result = [];
-                const headerLine = lines[0].trim().replace(/^\uFEFF/, '');
+                // 處理標題 (如果有跨行標題，現在也能正確讀取，但通常標題不會跨行)
+                if (lines.length === 0) return [];
+                
+                const headerLine = lines[0];
                 const headers = headerLine.split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
                 
                 let idxId = 0, idxQuestion = 1, idxA = 2, idxB = 3, idxC = 4, idxD = 5, idxAns = 6, idxNeedImage = 7, idxImgUrl = 9;
@@ -206,13 +230,22 @@
                     if (h.includes('圖檔url') || h.includes('連結')) idxImgUrl = index;
                 });
 
+                // 從第 1 行開始解析資料 (第 0 行是標題)
                 for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
+                    const line = lines[i];
+                    if (!line.trim()) continue;
+
+                    // 使用正規表達式切割，只切割「引號外」的逗號
                     const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     let finalParts = parts;
+                    
+                    // Fallback 機制
                     if (parts.length < idxAns) finalParts = line.split(',');
-                    const cleanParts = finalParts.map(p => p.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+
+                    const cleanParts = finalParts.map(p => {
+                        // 移除前後空白與包覆的引號，並將 CSV 的跳脫引號 ("") 還原為 (")
+                        return p.trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    });
 
                     if (cleanParts.length > idxAns) {
                         const needImageVal = cleanParts[idxNeedImage]?.trim();
