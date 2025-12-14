@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Code Runner: 程式語言大冒險</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+TC:wght@400;700&display=swap');
+
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff41;
+            --neon-yellow: #ffee00;
+            --bg-color: #050510;
+            --panel-bg: rgba(16, 20, 30, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow: hidden;
+            color: white;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 背景網格動畫 */
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(var(--panel-bg) 1px, transparent 1px),
+                linear-gradient(90deg, var(--panel-bg) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(40px) translateZ(-200px); }
+        }
+
+        /* 遊戲容器 */
+        #game-container {
+            position: relative;
+            width: 95vw;
+            height: 90vh;
+            max-width: 960px;
+            max-height: 640px;
+            background: linear-gradient(to bottom, #000000 70%, #111122 100%);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 50px rgba(0, 243, 255, 0.1);
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI 通用樣式 */
+        .ui-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10;
+            transition: opacity 0.3s;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin: 10px 0;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        h1 { font-size: 2.2rem; color: var(--neon-blue); }
+        h2 { font-size: 1.8rem; color: var(--neon-pink); }
+
+        .btn {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 40px;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            margin-top: auto;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--neon-green);
+            border-radius: 5px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 30px var(--neon-green);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* 初始畫面佈局 */
+        .start-content-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 10px;
+            height: 100%;
+        }
+
+        .left-panel, .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--neon-blue);
+            padding: 10px;
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            border-radius: 5px;
+            outline: none;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .char-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .char-card {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #555;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .char-card.selected {
+            border-color: var(--neon-yellow);
+            box-shadow: 0 0 15px var(--neon-yellow);
+            transform: scale(1.1);
+            background: rgba(255, 238, 0, 0.1);
+        }
+
+        .instructions {
+            background: rgba(0, 50, 60, 0.4);
+            border: 1px solid var(--neon-blue);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #ddd;
+            width: 100%;
+            line-height: 1.6;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            height: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .instructions h3 {
+            color: var(--neon-yellow);
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .instructions ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* 改為靠上對齊 */
+            pointer-events: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            z-index: 5;
+        }
+
+        .hud-left, .hud-right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hud-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30%;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 5px black;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            white-space: nowrap;
+        }
+
+        .hp-bar-container {
+            width: 150px;
+            height: 15px;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff3333, #ff0000);
+            box-shadow: 0 0 10px #ff0000;
+            transition: width 0.2s;
+        }
+
+        /* 進度條樣式 */
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #111;
+            border: 1px solid #444;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transition: width 0.2s linear;
+        }
+
+        /* 答題介面 */
+        #quiz-container {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-blue);
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 550px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+        
+        #quiz-screen {
+            justify-content: center;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: white;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--neon-blue);
+            padding: 12px;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background: var(--neon-green);
+            color: black;
+            border-color: var(--neon-green);
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background: #ff0033;
+            border-color: #ff0033;
+        }
+
+        /* 結算畫面 */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            width: 250px;
+            margin: 8px 0;
+            font-size: 1rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .grade-display {
+            font-size: 3.5rem;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 20px var(--neon-yellow);
+            margin: 15px 0;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        #end-screen {
+            justify-content: center;
+        }
+
+        /* 提示訊息 */
+        #message-area {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 10px black;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        /* 操作按鈕 (Mobile) */
+        .controls-layer {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .control-btn {
+            pointer-events: auto;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            backdrop-filter: blur(5px);
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.95);
+        }
+
+        .btn-attack {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .btn-jump {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 768px) {
+            .start-content-row {
+                flex-direction: column-reverse;
+                align-items: center;
+                gap: 10px;
+                overflow-y: auto;
+            }
+            .instructions {
+                font-size: 0.8rem;
+                max-height: 150px;
+            }
+            h1 { font-size: 1.8rem; }
+            .btn { padding: 10px 30px; font-size: 1.1rem; margin-bottom: 10px;}
+            .char-card { width: 50px; height: 50px; font-size: 1.5rem; }
+            .mobile-hint { display: none; }
+            
+            .hud-center { width: 50%; } /* Mobile上進度條寬一點 */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="cyber-grid"></div>
+
+    <div id="game-container">
+        
+        <!-- Canvas Layer -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Heads Up Display -->
+        <div id="hud" class="hidden">
+            <!-- 左側 -->
+            <div class="hud-left">
+                <div class="hud-item">
+                    <span id="hud-level">LEVEL 1</span>
+                </div>
+                <div class="hud-item">
+                    <span style="font-size:0.8rem; margin-right:5px;">HP</span>
+                    <div class="hp-bar-container">
+                        <div id="hp-bar" class="hp-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中間：進度條 -->
+            <div class="hud-center">
+                <span style="font-size:0.8rem; color:#aaa; font-family:'Orbitron'">GOAL DISTANCE</span>
+                <div class="progress-bar-container">
+                    <div id="level-progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <!-- 右側 -->
+            <div class="hud-right">
+                <div class="hud-item">
+                    <span style="color:var(--neon-yellow)">$</span>
+                    <span id="hud-score">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 浮動訊息 -->
+        <div id="message-area"></div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls" class="controls-layer hidden">
+            <div class="control-btn btn-jump" id="m-jump-btn">JUMP</div>
+            <div class="control-btn btn-attack" id="m-attack-btn">SLASH</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="ui-screen">
+            <h1>CODE RUNNER</h1>
+            <p style="color:var(--neon-blue); letter-spacing: 2px; margin-top: -10px; font-size: 0.9rem;">BLADE JUMPER EDITION</p>
+            
+            <div class="start-content-row">
+                <!-- 左側：遊戲說明 -->
+                <div class="left-panel">
+                    <div class="instructions">
+                        <h3>⚡ 戰鬥系統指南 ⚡</h3>
+                        <ul>
+                            <li><strong>跳躍 (Jump)：</strong><br>PC: <span style="color:var(--neon-yellow)">[空白鍵]</span> | Mobile: <span style="color:var(--neon-yellow)">[JUMP]</span></li>
+                            <li><strong>斬擊 (Slash)：</strong><br>PC: <span style="color:var(--neon-pink)">[Z鍵]</span> | Mobile: <span style="color:var(--neon-pink)">[SLASH]</span><br>
+                            <em style="color:#aaa; font-size:0.8em;">攻擊可破壞障礙物並短暫滯空。</em></li>
+                            <li><strong>目標：</strong><br>一邊跑酷斬殺敵人，一邊回答程式知識。</li>
+                            <li><strong>道具：</strong><br>💰加分、⚡加速、🐢減速、⭐無敵。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 右側：角色選擇與輸入 -->
+                <div class="right-panel">
+                    <div class="input-group">
+                        <label style="color:#aaa; display:block; margin-bottom:5px;">代號 ID</label>
+                        <input type="text" id="player-name" placeholder="Player1" maxlength="10">
+                    </div>
+
+                    <p style="margin-bottom: 10px; color: #aaa; font-size: 0.9rem;">選擇戰鬥化身</p>
+                    <div class="char-select" id="char-select">
+                        <!-- 由 JS 生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="start-btn">連結系統 (START)</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="ui-screen hidden">
+            <!-- 倒數遮罩 -->
+            <div id="quiz-countdown-overlay" class="hidden">
+                <h2 style="color:white">準備答題</h2>
+                <div id="quiz-pre-timer" style="font-size: 5rem; color: var(--neon-blue); font-family: 'Orbitron', sans-serif;">5</div>
+                <p>請仔細閱讀題目...</p>
+            </div>
+
+            <div id="quiz-container">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:gray; font-size: 0.9rem;">
+                    <span id="quiz-progress">Question 1/2</span>
+                </div>
+                <div id="quiz-question" class="question-text">題目載入中...</div>
+                <div id="quiz-options" class="options-grid">
+                    <!-- 選項由 JS 生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Fail Screen -->
+        <div id="fail-screen" class="ui-screen hidden">
+            <h2 style="color: #ff3333">SYSTEM FAILURE</h2>
+            <p>HP 歸零，同步失敗</p>
+            <button class="btn" id="retry-level-btn">重新連線 (RETRY)</button>
+        </div>
+        
+        <!-- Quiz Fail Screen -->
+        <div id="quiz-fail-screen" class="ui-screen hidden">
+            <h2 style="color: #ff3333">ACCESS DENIED</h2>
+            <p>答錯太多，無法進入下一層防火牆</p>
+            <button class="btn" id="retry-quiz-level-btn">重新挑戰關卡</button>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="ui-screen hidden">
+            <h1 style="color: var(--neon-green)">MISSION COMPLETE</h1>
+            <div class="grade-display" id="final-grade">S</div>
+            <p id="final-comment" style="color: var(--neon-blue); margin-bottom: 20px;">完美的程式大師！</p>
+            
+            <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; border: 1px solid #333;">
+                <div class="stat-row">
+                    <span>代號:</span> <span id="end-name">-</span>
+                </div>
+                <div class="stat-row">
+                    <span>總得分:</span> <span id="end-score">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>答對題數:</span> <span id="end-correct">0 / 10</span>
+                </div>
+                <div class="stat-row">
+                    <span>正確率:</span> <span id="end-accuracy">0%</span>
+                </div>
+            </div>
+
+            <button class="btn" id="restart-btn" style="margin-top: 20px;">重啟系統 (RESTART)</button>
+        </div>
+    </div>
+
+<script>
+/**
+ * 遊戲設定與資料結構
+ */
+const CONFIG = {
+    gravity: 0.6,
+    jumpStrength: -13, 
+    baseSpeed: 3.5,
+    maxHp: 3,
+    levelDistance: 1000, // 修改：從 2500 縮短為 1000，讓問答更快出現
+    totalLevels: 5,
+    questionsPerLevel: 2,
+    minObstacleSpacing: 400,
+    attackDuration: 15,
+    attackCooldown: 30
+};
+
+// 角色資料
+const CHARACTERS = [
+    { id: 'robot', emoji: '🤖', name: 'BitBot', color: '#00f3ff', weapon: '#00f3ff' },
+    { id: 'cat', emoji: '🐱', name: 'CyberCat', color: '#ff00ff', weapon: '#ff00ff' },
+    { id: 'ninja', emoji: '🥷', name: 'NeonNinja', color: '#00ff41', weapon: '#00ff41' },
+    { id: 'alien', emoji: '👽', name: 'X-Code', color: '#ffee00', weapon: '#ffee00' },
+    { id: 'fox', emoji: '🦊', name: 'FireFox', color: '#ff5500', weapon: '#ff5500' },
+    { id: 'skull', emoji: '💀', name: 'Glitch', color: '#ffffff', weapon: '#ff3333' }
+];
+
+// 題庫 (15題)
+const QUESTION_BANK = [
+    { q: "人類與電腦之間進行溝通的橋樑，我們稱之為什麼？", options: ["演算法", "程式語言", "流程圖", "虛擬碼"], ans: 1 },
+    { q: "下列哪一種語言是電腦唯一能夠「直接」理解並執行的語言？", options: ["組合語言", "高階語言", "機器語言", "自然語言"], ans: 2 },
+    { q: "機器語言的指令是由哪兩個數字符號所組成的？", options: ["1 與 2", "0 與 1", "A 與 Z", "0 與 9"], ans: 1 },
+    { q: "下列關於「機器語言」的敘述，何者正確？", options: ["可讀性高", "執行速度最慢", "可攜性佳", "執行速度最快"], ans: 3 },
+    { q: "使用助憶碼（例如：ADD, MOV）來代替 0 與 1 的指令，是下列哪種語言的特色？", options: ["機器語言", "組合語言", "C++ 語言", "Python 語言"], ans: 1 },
+    { q: "下列哪一組程式語言都屬於「低階語言」？", options: ["機器語言、組合語言", "C 語言、Java", "Python、機器語言", "組合語言、C++"], ans: 0 },
+    { q: "相較於低階語言，下列何者是「高階語言」的主要優點？", options: ["執行速度最快", "不需翻譯即可執行", "語法接近人類語言", "指令由 0 與 1 組成"], ans: 2 },
+    { q: "關於程式語言的「可攜性」（Portability），下列敘述何者正確？", options: ["機器語言最好", "可在不同電腦系統執行", "電腦重量很輕", "組合語言優於高階"], ans: 1 },
+    { q: "下列哪一種程式語言不需要經過轉譯（翻譯），電腦就能執行？", options: ["Python", "Java", "組合語言", "機器語言"], ans: 3 },
+    { q: "若要開發作業系統（Operating System），下列哪種語言最常被使用且適合？", options: ["Python", "C 語言", "Prolog", "HTML"], ans: 1 },
+    { q: "哪一種程式語言以語法易於理解著稱，且目前被廣泛應用於「數據分析」領域？", options: ["C++", "LISP", "Python", "組合語言"], ans: 2 },
+    { q: "下列哪一種語言強調跨平台特性，並廣泛用於 Web 應用開發和行動裝置 App？", options: ["Java", "機器語言", "C 語言", "LISP"], ans: 0 },
+    { q: "歷史悠久的程式語言 LISP 與 Prolog，主要應用於哪一個領域？", options: ["網頁設計", "人工智慧 (AI)", "手機遊戲", "文書處理"], ans: 1 },
+    { q: "根據教材中的「硬體與軟體」概念，下列何者屬於「軟體」？", options: ["鍵盤與滑鼠", "螢幕顯示器", "硬碟", "彈奏的音樂或書中知識"], ans: 3 },
+    { q: "關於程式設計師與性別的議題，下列敘述何者正確？", options: ["男性專屬職業", "早期先驅是一群女性", "女性邏輯較差", "有嚴格性別規定"], ans: 1 }
+];
+
+/**
+ * 遊戲狀態管理
+ */
+const STATE = {
+    START: 0,
+    RUNNING: 1,
+    QUIZ: 2,
+    LEVEL_TRANSITION: 3,
+    GAME_OVER: 4,
+    VICTORY: 5
+};
+
+let currentState = STATE.START;
+let canvas, ctx;
+let lastTime = 0;
+
+// 遊戲數據
+let gameData = {
+    playerName: "Player",
+    character: CHARACTERS[0],
+    score: 0,
+    currentLevel: 1,
+    hp: 3,
+    questionsAnswered: 0,
+    questionsCorrect: 0,
+    levelQuestions: [], 
+    levelCorrectCount: 0,
+    lastObstacleX: -1000, 
+    totalFrame: 0 
+};
+
+// 跑酷實體
+let runner = {
+    x: 100,
+    y: 0,
+    w: 40,
+    h: 40,
+    vy: 0,
+    grounded: false,
+    invincible: false,
+    invincibleTimer: 0,
+    distance: 0,
+    speedModifier: 1,
+    trail: [],
+    // 戰鬥屬性
+    isAttacking: false,
+    attackTimer: 0,
+    cooldownTimer: 0
+};
+
+let obstacles = [];
+let coins = [];
+let powerups = [];
+let particles = [];
+let shockwaves = [];
+
+/**
+ * 初始化
+ */
+window.onload = function() {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    setupStartScreen();
+    bindEvents();
+    
+    shuffleArray(QUESTION_BANK);
+};
+
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+}
+
+function bindEvents() {
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowUp') {
+            handleJump();
+        }
+        if (e.code === 'KeyZ' || e.code === 'KeyK') {
+            handleAttack();
+        }
+    });
+
+    // Mobile Controls
+    document.getElementById('m-jump-btn').addEventListener('touchstart', (e) => {
+        e.preventDefault(); handleJump();
+    });
+    document.getElementById('m-attack-btn').addEventListener('touchstart', (e) => {
+        e.preventDefault(); handleAttack();
+    });
+    
+    // Mouse fallback
+    document.getElementById('m-jump-btn').addEventListener('mousedown', (e) => {
+        handleJump();
+    });
+    document.getElementById('m-attack-btn').addEventListener('mousedown', (e) => {
+        handleAttack();
+    });
+
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('retry-level-btn').addEventListener('click', restartLevel);
+    document.getElementById('retry-quiz-level-btn').addEventListener('click', restartLevel);
+    document.getElementById('restart-btn').addEventListener('click', resetGame);
+}
+
+function setupStartScreen() {
+    const container = document.getElementById('char-select');
+    CHARACTERS.forEach((char, index) => {
+        const card = document.createElement('div');
+        card.className = 'char-card' + (index === 0 ? ' selected' : '');
+        card.innerHTML = char.emoji;
+        card.onclick = () => selectCharacter(index);
+        container.appendChild(card);
+    });
+}
+
+function selectCharacter(index) {
+    document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.char-card')[index].classList.add('selected');
+    gameData.character = CHARACTERS[index];
+}
+
+function handleJump() {
+    if (currentState === STATE.RUNNING) {
+        if (runner.grounded) {
+            runner.vy = CONFIG.jumpStrength;
+            runner.grounded = false;
+            createParticles(runner.x + runner.w/2, runner.y + runner.h, 5, '#fff');
+        }
+    }
+}
+
+function handleAttack() {
+    if (currentState === STATE.RUNNING && runner.cooldownTimer <= 0) {
+        runner.isAttacking = true;
+        runner.attackTimer = CONFIG.attackDuration;
+        runner.cooldownTimer = CONFIG.attackCooldown;
+        
+        if (!runner.grounded) {
+            runner.vy = Math.min(runner.vy, 0); 
+            runner.vy -= 2; 
+        } else {
+             runner.x += 10;
+        }
+        
+        createShockwave(runner.x + runner.w, runner.y + runner.h/2, gameData.character.weapon);
+    }
+}
+
+/**
+ * 遊戲流程控制
+ */
+function startGame() {
+    const nameInput = document.getElementById('player-name').value;
+    if (nameInput.trim() !== "") gameData.playerName = nameInput;
+
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('mobile-controls').classList.remove('hidden');
+    
+    resetGameData();
+    startLevel(1);
+}
+
+function resetGameData() {
+    gameData.score = 0;
+    gameData.currentLevel = 0;
+    gameData.hp = CONFIG.maxHp;
+    gameData.questionsAnswered = 0;
+    gameData.questionsCorrect = 0;
+    shuffleArray(QUESTION_BANK);
+}
+
+function startLevel(level) {
+    gameData.currentLevel = level;
+    gameData.levelCorrectCount = 0;
+    gameData.lastObstacleX = -1000;
+    
+    runner.y = canvas.height - 150;
+    runner.vy = 0;
+    runner.distance = 0;
+    runner.speedModifier = 1;
+    runner.invincible = false;
+    runner.trail = [];
+    runner.isAttacking = false;
+    runner.attackTimer = 0;
+    runner.cooldownTimer = 0;
+
+    gameData.hp = CONFIG.maxHp;
+    
+    obstacles = [];
+    coins = [];
+    powerups = [];
+    particles = [];
+    shockwaves = [];
+
+    updateHUD();
+    currentState = STATE.RUNNING;
+    
+    let qIndexStart = (level - 1) * CONFIG.questionsPerLevel;
+    gameData.levelQuestions = QUESTION_BANK.slice(qIndexStart, qIndexStart + CONFIG.questionsPerLevel);
+
+    showMessage(`LEVEL ${level} START!`);
+    
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+}
+
+function restartLevel() {
+    document.getElementById('fail-screen').classList.add('hidden');
+    document.getElementById('quiz-fail-screen').classList.add('hidden');
+    document.getElementById('mobile-controls').classList.remove('hidden');
+    startLevel(gameData.currentLevel);
+}
+
+function resetGame() {
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.getElementById('mobile-controls').classList.add('hidden');
+}
+
+/**
+ * 跑酷邏輯
+ */
+function gameLoop(timestamp) {
+    if (currentState !== STATE.RUNNING) return;
+
+    const dt = (timestamp - lastTime) / 16.67; 
+    lastTime = timestamp;
+    gameData.totalFrame++;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    updatePhysics(dt);
+    generateEntities();
+    checkCollisions();
+    drawGame();
+    
+    // 持續更新HUD (主要是進度條)
+    updateHUD();
+
+    if (runner.distance >= CONFIG.levelDistance) {
+        startQuizPhase();
+        return;
+    }
+
+    if (gameData.hp <= 0) {
+        currentState = STATE.GAME_OVER;
+        document.getElementById('fail-screen').classList.remove('hidden');
+        document.getElementById('mobile-controls').classList.add('hidden');
+        return;
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function updatePhysics(dt) {
+    if (runner.isAttacking) {
+        runner.attackTimer -= dt;
+        if (runner.attackTimer <= 0) runner.isAttacking = false;
+    }
+    if (runner.cooldownTimer > 0) runner.cooldownTimer -= dt;
+
+    runner.vy += CONFIG.gravity * dt;
+    runner.y += runner.vy * dt;
+
+    let groundY = canvas.height - 80;
+    
+    if (runner.y + runner.h > groundY) {
+        runner.y = groundY - runner.h;
+        runner.vy = 0;
+        runner.grounded = true;
+    }
+
+    if (runner.x > 100) runner.x -= 1 * dt; 
+
+    if (gameData.totalFrame % 3 === 0) {
+        runner.trail.push({x: runner.x, y: runner.y, alpha: 0.6, attacking: runner.isAttacking});
+        if (runner.trail.length > 5) runner.trail.shift();
+    }
+
+    let moveSpeed = CONFIG.baseSpeed * runner.speedModifier * dt;
+    runner.distance += moveSpeed / 5; 
+
+    [obstacles, coins, powerups].forEach(arr => {
+        for (let i = arr.length - 1; i >= 0; i--) {
+            arr[i].x -= moveSpeed;
+            if (arr[i].x < -100) arr.splice(i, 1);
+        }
+    });
+    
+    gameData.lastObstacleX -= moveSpeed;
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+    
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+        let s = shockwaves[i];
+        s.radius += 5;
+        s.alpha -= 0.1;
+        if (s.alpha <= 0) shockwaves.splice(i, 1);
+    }
+
+    if (runner.invincible) {
+        runner.invincibleTimer -= dt;
+        if (runner.invincibleTimer <= 0) runner.invincible = false;
+    }
+}
+
+function generateEntities() {
+    let canSpawnObstacle = (canvas.width - gameData.lastObstacleX > CONFIG.minObstacleSpacing);
+
+    if (canSpawnObstacle && Math.random() < 0.01) { 
+        let type = Math.random() < 0.5 ? 'flying' : 'ground';
+        let obsX = canvas.width + 50;
+        let obsY = type === 'ground' ? canvas.height - 130 : canvas.height - 220; 
+        
+        obstacles.push({
+            x: obsX,
+            y: obsY,
+            w: 50,
+            h: 50,
+            type: type,
+            hp: 1, 
+            color: type === 'flying' ? '#ff3333' : '#aa0000',
+            pulse: 0
+        });
+        gameData.lastObstacleX = obsX;
+    }
+
+    if (Math.random() < 0.02) {
+        coins.push({
+            x: canvas.width + 100,
+            y: canvas.height - 120 - Math.random() * 150,
+            r: 12,
+            scale: 1,
+            scaleDir: 0.05
+        });
+    }
+
+    if (Math.random() < 0.003) {
+        let r = Math.random();
+        let pType = 'speed';
+        let color = '#00f3ff'; 
+        
+        if (r < 0.33) { 
+            pType = 'slow'; 
+            color = '#ff9900'; 
+        } else if (r > 0.85) { 
+            pType = 'invincible'; 
+            color = '#ffee00'; 
+        }
+
+        powerups.push({
+            x: canvas.width + 100,
+            y: canvas.height - 150,
+            w: 30,
+            h: 30,
+            type: pType,
+            color: color
+        });
+    }
+}
+
+function checkCollisions() {
+    let attackRect = { x: runner.x, y: runner.y - 10, w: runner.w + 40, h: runner.h + 20 };
+    let playerRect = { x: runner.x + 10, y: runner.y + 10, w: runner.w - 20, h: runner.h - 10 };
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obs = obstacles[i];
+        let obsRect = {x: obs.x, y: obs.y, w: obs.w, h: obs.h};
+        
+        if (runner.isAttacking && rectIntersect(attackRect, obsRect)) {
+            createParticles(obs.x + obs.w/2, obs.y + obs.h/2, 20, obs.color);
+            createShockwave(obs.x + obs.w/2, obs.y + obs.h/2, '#fff');
+            obstacles.splice(i, 1);
+            gameData.score += 200;
+            updateHUD();
+            shakeScreen();
+            showMessage("DESTROY!");
+            continue;
+        }
+
+        if (rectIntersect(playerRect, obsRect)) {
+            if (!runner.invincible && obs.type !== 'passed') {
+                gameData.hp--;
+                updateHUD();
+                runner.invincible = true;
+                runner.invincibleTimer = 90; 
+                createParticles(runner.x, runner.y, 20, '#ff0000');
+                shakeScreen();
+                
+                if(runner.invincibleTimer > 90) { 
+                     gameData.hp++; 
+                }
+            }
+            obs.type = 'passed'; 
+        }
+    }
+
+    for (let i = coins.length - 1; i >= 0; i--) {
+        let c = coins[i];
+        if (rectIntersect(playerRect, {x: c.x - c.r, y: c.y - c.r, w: c.r*2, h: c.r*2})) {
+            gameData.score += 100;
+            createParticles(c.x, c.y, 8, '#ffff00');
+            coins.splice(i, 1);
+            updateHUD();
+        }
+    }
+
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        let p = powerups[i];
+        if (rectIntersect(playerRect, {x: p.x, y: p.y, w: p.w, h: p.h})) {
+            applyPowerup(p.type);
+            createParticles(p.x, p.y, 15, p.color);
+            showMessage(getPowerupName(p.type));
+            powerups.splice(i, 1);
+        }
+    }
+}
+
+function applyPowerup(type) {
+    if (type === 'speed') {
+        runner.speedModifier = 1.4;
+        setTimeout(() => runner.speedModifier = 1, 3000);
+    } else if (type === 'slow') {
+        runner.speedModifier = 0.6;
+        setTimeout(() => runner.speedModifier = 1, 3000);
+    } else if (type === 'invincible') {
+        runner.invincible = true;
+        runner.invincibleTimer = 300; 
+    }
+}
+
+function getPowerupName(type) {
+    switch(type) {
+        case 'speed': return 'SPEED UP!';
+        case 'slow': return 'SLOW DOWN...';
+        case 'invincible': return 'INVINCIBLE!';
+        default: return '';
+    }
+}
+
+function createShockwave(x, y, color) {
+    shockwaves.push({x: x, y: y, radius: 10, alpha: 1, color: color});
+}
+
+function drawGame() {
+    let bgOffset = (runner.distance * 0.2) % canvas.width;
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 80);
+    for(let i=0; i<=canvas.width; i+=50) {
+        let h = Math.sin((i + bgOffset)/100) * 50 + 50;
+        ctx.lineTo(i, canvas.height - 80 - h);
+    }
+    ctx.lineTo(canvas.width, canvas.height - 80);
+    ctx.fill();
+
+    let groundY = canvas.height - 80;
+    let g = ctx.createLinearGradient(0, groundY, 0, canvas.height);
+    g.addColorStop(0, '#003344');
+    g.addColorStop(1, '#000000');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, groundY, canvas.width, 80);
+    
+    ctx.strokeStyle = 'rgba(0, 243, 255, 0.3)';
+    ctx.lineWidth = 2;
+    let gridOffset = (runner.distance * 5) % 60;
+    
+    ctx.beginPath();
+    for(let i = -2; i < 15; i++) {
+        ctx.moveTo(i * 60 - gridOffset, groundY);
+        ctx.lineTo(i * 60 - 200 - gridOffset, canvas.height);
+    }
+    ctx.moveTo(0, groundY + 5);
+    ctx.lineTo(canvas.width, groundY + 5);
+    ctx.moveTo(0, groundY + 40);
+    ctx.lineTo(canvas.width, groundY + 40);
+    ctx.stroke();
+    
+    ctx.fillStyle = '#00f3ff';
+    ctx.fillRect(0, groundY, canvas.width, 3);
+    
+    let finishX = (CONFIG.levelDistance - runner.distance) * 5 + runner.x; 
+    if (finishX < canvas.width) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(0, 255, 65, 0.8)`;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(finishX, groundY - 150, 60, 150);
+        ctx.fillStyle = `rgba(0, 255, 65, 0.2)`;
+        ctx.fillRect(finishX, groundY - 150, 60, 150);
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 16px Orbitron';
+        ctx.fillText("GOAL", finishX + 8, groundY - 80);
+        ctx.restore();
+    }
+
+    runner.trail.forEach(t => {
+        t.x -= CONFIG.baseSpeed * runner.speedModifier * 0.16; 
+        ctx.save();
+        ctx.globalAlpha = t.alpha * 0.3;
+        ctx.font = "40px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(gameData.character.emoji, t.x + runner.w/2, t.y + runner.h/2);
+        
+        if(t.attacking) {
+             ctx.strokeStyle = gameData.character.weapon;
+             ctx.lineWidth = 3;
+             ctx.beginPath();
+             ctx.arc(t.x + runner.w/2 + 20, t.y + runner.h/2, 35, -Math.PI/4, Math.PI/4);
+             ctx.stroke();
+        }
+        
+        ctx.restore();
+        t.alpha -= 0.05;
+    });
+
+    ctx.save();
+    if (runner.invincible && Math.floor(Date.now() / 100) % 2 === 0) {
+        ctx.globalAlpha = 0.5;
+    }
+    
+    ctx.font = "40px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = gameData.character.color;
+    ctx.shadowBlur = 20;
+    ctx.fillText(gameData.character.emoji, runner.x + runner.w/2, runner.y + runner.h/2);
+    ctx.shadowBlur = 0;
+
+    if (runner.isAttacking) {
+        ctx.strokeStyle = gameData.character.weapon;
+        ctx.shadowColor = gameData.character.weapon;
+        ctx.shadowBlur = 15;
+        ctx.lineWidth = 6;
+        ctx.lineCap = 'round';
+        
+        ctx.beginPath();
+        let slashX = runner.x + runner.w/2;
+        let slashY = runner.y + runner.h/2;
+        ctx.arc(slashX + 15, slashY, 45, -Math.PI/3, Math.PI/3);
+        ctx.stroke();
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = "bold 20px Orbitron";
+        ctx.fillText("SLASH!", runner.x, runner.y - 20);
+    }
+    
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(runner.x + runner.w/2, groundY + 5, 15, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    obstacles.forEach(obs => {
+        ctx.save();
+        if (obs.type === 'flying') {
+            obs.pulse = (obs.pulse + 0.2) % (Math.PI * 2);
+            let hoverY = Math.sin(obs.pulse) * 5;
+            ctx.translate(obs.x + obs.w/2, obs.y + obs.h/2 + hoverY);
+            
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill(); 
+            ctx.fillStyle = `rgba(255, 0, 0, ${Math.abs(Math.sin(obs.pulse)) + 0.5})`;
+            ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fill();
+            
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(-25, 0); ctx.lineTo(25, 0); ctx.stroke();
+            
+            ctx.fillStyle = '#ff3333';
+            ctx.font = '10px Arial';
+            ctx.fillText("ENEMY", -18, -25);
+
+        } else {
+            ctx.fillStyle = '#220000';
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+            
+            ctx.fillStyle = '#ff3333';
+            if (Math.random() > 0.5) ctx.fillRect(obs.x + 5, obs.y + 5, 10, 5);
+            ctx.font = '10px Arial';
+            ctx.fillStyle = 'white';
+            ctx.fillText("BUG", obs.x + 5, obs.y - 5);
+        }
+        ctx.restore();
+    });
+
+    coins.forEach(c => {
+        c.scale += c.scaleDir;
+        if (c.scale > 1 || c.scale < 0.1) c.scaleDir *= -1;
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.scale(Math.abs(c.scale), 1);
+        ctx.fillStyle = '#ffee00';
+        ctx.beginPath(); ctx.arc(0, 0, c.r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#b8860b'; ctx.font = '14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('$', 0, 1);
+        ctx.restore();
+    });
+
+    powerups.forEach(p => {
+        ctx.save();
+        ctx.translate(p.x + p.w/2, p.y + p.h/2);
+        ctx.shadowBlur = 20; ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.moveTo(0, -p.h/2); ctx.lineTo(p.w/2, 0); ctx.lineTo(0, p.h/2); ctx.lineTo(-p.w/2, 0);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = 'black'; ctx.font = '16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        let icon = p.type === 'speed' ? '⚡' : (p.type === 'slow' ? '🐢' : '⭐');
+        ctx.fillText(icon, 0, 0);
+        ctx.restore();
+    });
+
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.globalAlpha = 1;
+    });
+    
+    shockwaves.forEach(s => {
+        ctx.save();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = s.alpha;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    });
+}
+
+function createParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            life: 1.0,
+            size: Math.random() * 5 + 2,
+            color: color
+        });
+    }
+}
+
+function rectIntersect(r1, r2) {
+    return !(r2.x > r1.x + r1.w || 
+             r2.x + r2.w < r1.x || 
+             r2.y > r1.y + r1.h || 
+             r2.y + r2.h < r1.y);
+}
+
+function shakeScreen() {
+    let intensity = 15;
+    canvas.style.transform = `translate(${Math.random()*intensity-intensity/2}px, ${Math.random()*intensity-intensity/2}px)`;
+    setTimeout(() => canvas.style.transform = 'none', 100);
+}
+
+function updateHUD() {
+    document.getElementById('hud-level').innerText = `LEVEL ${gameData.currentLevel}`;
+    document.getElementById('hud-score').innerText = gameData.score;
+    let hpPercent = (gameData.hp / CONFIG.maxHp) * 100;
+    document.getElementById('hp-bar').style.width = `${hpPercent}%`;
+    
+    // 更新進度條
+    let progress = Math.min(100, (runner.distance / CONFIG.levelDistance) * 100);
+    document.getElementById('level-progress-bar').style.width = `${progress}%`;
+}
+
+function showMessage(text) {
+    const el = document.getElementById('message-area');
+    el.innerText = text;
+    el.style.opacity = 1;
+    el.style.top = "20%";
+    el.style.transform = "translateX(-50%) scale(1.2)";
+    setTimeout(() => {
+        el.style.opacity = 0;
+        el.style.top = "15%"; 
+        el.style.transform = "translateX(-50%) scale(1)";
+    }, 800);
+}
+
+/**
+ * 答題系統 (與原版相同)
+ */
+function startQuizPhase() {
+    currentState = STATE.QUIZ;
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    document.getElementById('mobile-controls').classList.add('hidden'); // 隱藏按鈕
+    startQuizCountdown(5, () => { loadQuestion(0); });
+}
+
+function startQuizCountdown(seconds, callback) {
+    const overlay = document.getElementById('quiz-countdown-overlay');
+    const timerEl = document.getElementById('quiz-pre-timer');
+    overlay.classList.remove('hidden');
+    let count = seconds;
+    timerEl.innerText = count;
+    const interval = setInterval(() => {
+        count--;
+        timerEl.innerText = count;
+        if (count <= 0) {
+            clearInterval(interval);
+            overlay.classList.add('hidden');
+            callback();
+        }
+    }, 1000);
+}
+
+let currentQuestionIndex = 0;
+function loadQuestion(index) {
+    currentQuestionIndex = index;
+    if (index >= gameData.levelQuestions.length) {
+        finishQuizPhase();
+        return;
+    }
+    const q = gameData.levelQuestions[index];
+    document.getElementById('quiz-progress').innerText = `Question ${index + 1}/${CONFIG.questionsPerLevel}`;
+    document.getElementById('quiz-question').innerText = q.q;
+    const optionsDiv = document.getElementById('quiz-options');
+    optionsDiv.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'option-btn';
+        btn.innerText = `(${String.fromCharCode(65 + i)}) ${opt}`;
+        btn.onclick = () => checkAnswer(i, q.ans, btn);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected, correct, btnElement) {
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b => b.style.pointerEvents = 'none');
+    gameData.questionsAnswered++;
+    if (selected === correct) {
+        btnElement.classList.add('correct');
+        gameData.score += 500;
+        gameData.questionsCorrect++;
+        gameData.levelCorrectCount++;
+        showMessage("CORRECT!");
+    } else {
+        btnElement.classList.add('wrong');
+        allBtns[correct].classList.add('correct'); 
+    }
+    updateHUD();
+    setTimeout(() => { loadQuestion(currentQuestionIndex + 1); }, 1500);
+}
+
+function finishQuizPhase() {
+    document.getElementById('quiz-screen').classList.add('hidden');
+    if (gameData.levelCorrectCount >= 1) {
+        if (gameData.currentLevel >= CONFIG.totalLevels) {
+            showEndScreen();
+        } else {
+            startLevel(gameData.currentLevel + 1);
+        }
+    } else {
+        document.getElementById('quiz-fail-screen').classList.remove('hidden');
+    }
+}
+
+/**
+ * 結算系統
+ */
+function showEndScreen() {
+    currentState = STATE.VICTORY;
+    document.getElementById('end-screen').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
+    const accuracy = Math.round((gameData.questionsCorrect / gameData.questionsAnswered) * 100) || 0;
+    let grade = 'C';
+    let comment = '再接再厲！';
+    if (accuracy >= 90) { grade = 'S'; comment = '傳說中的程式之神！'; }
+    else if (accuracy >= 80) { grade = 'A'; comment = '優秀的工程師！'; }
+    else if (accuracy >= 60) { grade = 'B'; comment = '合格的開發者！'; }
+    document.getElementById('final-grade').innerText = grade;
+    document.getElementById('final-comment').innerText = comment;
+    document.getElementById('end-name').innerText = gameData.playerName;
+    document.getElementById('end-score').innerText = gameData.score;
+    document.getElementById('end-correct').innerText = `${gameData.questionsCorrect} / ${gameData.questionsAnswered}`;
+    document.getElementById('end-accuracy').innerText = `${accuracy}%`;
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+</script>
+</body>
+</html>
