@@ -17,6 +17,8 @@
     
     <!-- 3. 引入 Babel (編譯 JSX) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 注意：已移除 Lucide CDN，改用內建圖示以確保 100% 穩定性 -->
 
     <style>
         body { margin: 0; cursor: none; background-color: #050505; }
@@ -90,6 +92,7 @@
         // ==========================================
 
         const SYSTEM_LOGS = [
+            { id: 112, date: '2025.12.14', category: 'DECODE', title: '解鎖電腦的術士:程式語言簡介', highlight: true },
             { id: 111, date: '2025.12.11', category: 'QUIZSYSTEM', title: 'Quizsystem:新增檢測與測驗模組', highlight: true },
             { id: 110, date: '2025.12.07', category: 'DECODE', title: 'Platform: 系統平台進化事件簿', link: 'https://clitclassroom.github.io/platform/platformP3.html',highlight: true },
             { id: 109, date: '2025.11.30', category: 'DECODE', title: 'Algorithm: 演算法特攻', link: 'https://clitclassroom.github.io/algorithm/algorithm.html',highlight: true },
@@ -106,7 +109,7 @@
         const CORE_STATUS = {
             active: true,
             level: 'WARNING',
-            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 ///新增檢測與測驗系統模組。 ///系統平台進化事件簿上線。 /// 演算法特攻新上線。 ///核心保衛戰新上線。 ///系統平台大冒險上線。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 ///解鎖電腦的術式:程式語言簡介。 ///新增檢測與測驗系統模組。 ///系統平台進化事件簿上線。 /// 演算法特攻新上線。 ///核心保衛戰新上線。 ///系統平台大冒險上線。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
         };
 
         const MODULES = [
@@ -147,6 +150,7 @@
                     { title: '系統平台Part2:硬體演進 x 系統平台大解密', url: 'https://clitclassroom.github.io/platform/platformP2.html', tag: 'NEW'},
                     { title: '演算法特攻', url: 'https://clitclassroom.github.io/algorithm/algorithm.html', tag: 'NEW'},
                     { title: '系統平台Part3:系統平台進化事件簿', url: 'https://clitclassroom.github.io/platform/platformP3.html', tag: 'NEW'},
+                    { title: '解鎖電腦的術式:程式語言簡介', url: 'https://clitclassroom.github.io/coding/aboutcoding.html', tag: 'NEW'},
                 ]
             },
             {
@@ -210,6 +214,7 @@
         ];
 
         const SIMULATIONS = [
+            { title: '程式語言大冒險(七年級)', sub: 'CODE RUNNER', url: 'https://clitclassroom.github.io/coding/coderunner.html', color: 'bg-yellow-600 hover:bg-yellow-500', status: 'COMBAT READY' },
             { title: '資訊獵手(九年級)', sub: 'CORE CODE G9', url: 'https://clitclassroom.github.io/quizsystem/11401G9final.html', color: 'bg-lime-600 hover:bg-lime-500', status: 'COMBAT READY' },
             { title: '資訊獵手(七年級)', sub: 'CORE CODE G7', url: 'https://clitclassroom.github.io/quizsystem/11401G7final.html', color: 'bg-green-600 hover:bg-green-500', status: 'COMBAT READY' },
             { title: '星際演算法英雄', sub: 'PIXEL ALGO HEROES', url: 'https://clitclassroom.github.io/algorithm/algogame.html', color: 'bg-emerald-600 hover:bg-emerald-500', status: 'COMBAT READY' },
@@ -436,5 +441,3 @@
     </script>
 </body>
 </html>
-
-
