@@ -186,21 +186,27 @@
         }
 
         .char-card {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border: 2px solid #555;
             border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
             cursor: pointer;
             transition: all 0.3s;
             background: rgba(0,0,0,0.5);
             position: relative;
             overflow: hidden;
+            padding: 5px;
         }
         
+        .char-card svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
         .char-card.selected {
             border-color: var(--neon-yellow);
             box-shadow: 0 0 15px var(--neon-yellow);
@@ -249,7 +255,7 @@
             padding: 15px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start; /* 改為靠上對齊 */
+            align-items: flex-start;
             pointer-events: none;
             font-family: 'Orbitron', sans-serif;
             font-size: 1.1rem;
@@ -302,7 +308,6 @@
             transition: width 0.2s;
         }
 
-        /* 進度條樣式 */
         .progress-bar-container {
             width: 100%;
             height: 8px;
@@ -333,10 +338,38 @@
             box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
             margin-top: auto;
             margin-bottom: auto;
+            position: relative;
+            z-index: 30; /* Ensure it's above other elements */
         }
         
         #quiz-screen {
             justify-content: center;
+            z-index: 25;
+        }
+
+        /* 倒數遮罩 */
+        #quiz-countdown-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,1); /* 完全不透明背景 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50; /* Top most */
+        }
+
+        /* 結果遮罩 */
+        #quiz-result-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 45;
+            text-align: center;
         }
 
         .question-text {
@@ -485,10 +518,10 @@
             }
             h1 { font-size: 1.8rem; }
             .btn { padding: 10px 30px; font-size: 1.1rem; margin-bottom: 10px;}
-            .char-card { width: 50px; height: 50px; font-size: 1.5rem; }
+            .char-card { width: 60px; height: 60px; }
             .mobile-hint { display: none; }
             
-            .hud-center { width: 50%; } /* Mobile上進度條寬一點 */
+            .hud-center { width: 50%; }
         }
 
     </style>
@@ -584,12 +617,19 @@
         <div id="quiz-screen" class="ui-screen hidden">
             <!-- 倒數遮罩 -->
             <div id="quiz-countdown-overlay" class="hidden">
-                <h2 style="color:white">準備答題</h2>
-                <div id="quiz-pre-timer" style="font-size: 5rem; color: var(--neon-blue); font-family: 'Orbitron', sans-serif;">5</div>
-                <p>請仔細閱讀題目...</p>
+                <h2 style="color:white; margin-bottom: 20px;">系統入侵準備...</h2>
+                <div id="quiz-pre-timer" style="font-size: 6rem; color: var(--neon-blue); font-family: 'Orbitron', sans-serif; text-shadow: 0 0 20px var(--neon-blue);">3</div>
+                <p style="margin-top:20px; color:#aaa;">解除防火牆鎖定</p>
+            </div>
+            
+            <!-- 答題結果遮罩 (新增) -->
+            <div id="quiz-result-overlay" class="hidden">
+                <h2 style="color:var(--neon-green); font-size: 2.5rem; margin-bottom:20px;">SYSTEM SYNCED</h2>
+                <p style="font-size: 1.5rem; margin-bottom:30px;">本關答對題數: <span id="level-quiz-score" style="color:var(--neon-yellow)">-</span></p>
+                <button class="btn" id="continue-game-btn">繼續冒險 (CONTINUE)</button>
             </div>
 
-            <div id="quiz-container">
+            <div id="quiz-container" class="hidden">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:gray; font-size: 0.9rem;">
                     <span id="quiz-progress">Question 1/2</span>
                 </div>
@@ -648,7 +688,7 @@ const CONFIG = {
     jumpStrength: -13, 
     baseSpeed: 3.5,
     maxHp: 3,
-    levelDistance: 1000, // 修改：從 2500 縮短為 1000，讓問答更快出現
+    levelDistance: 1000, 
     totalLevels: 5,
     questionsPerLevel: 2,
     minObstacleSpacing: 400,
@@ -656,14 +696,24 @@ const CONFIG = {
     attackCooldown: 30
 };
 
+// SVG 角色定義 (科技風格)
+const SVG_CHARS = {
+    robot: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="25" y="25" width="50" height="50" rx="10" fill="#00f3ff" stroke="#fff" stroke-width="3"/><rect x="35" y="40" width="10" height="10" fill="#000"/><rect x="55" y="40" width="10" height="10" fill="#000"/><rect x="40" y="60" width="20" height="5" fill="#000"/><line x1="50" y1="25" x2="50" y2="10" stroke="#00f3ff" stroke-width="3"/><circle cx="50" cy="10" r="5" fill="red"/></svg>`,
+    cat: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 30 L30 80 L70 80 L80 30 L50 40 Z" fill="#ff00ff" stroke="#fff" stroke-width="2"/><path d="M20 30 L10 10 L40 30" fill="#ff00ff" stroke="#fff" stroke-width="2"/><path d="M80 30 L90 10 L60 30" fill="#ff00ff" stroke="#fff" stroke-width="2"/><rect x="30" y="50" width="40" height="10" fill="#050510"/><circle cx="40" cy="55" r="3" fill="#00f3ff"/><circle cx="60" cy="55" r="3" fill="#00f3ff"/></svg>`,
+    ninja: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="35" fill="#00ff41"/><path d="M20 50 Q50 80 80 50" fill="none" stroke="#000" stroke-width="5"/><rect x="25" y="35" width="50" height="15" fill="#000"/><circle cx="35" cy="42" r="3" fill="red"/><circle cx="65" cy="42" r="3" fill="red"/><path d="M15 50 L5 20 L25 40" fill="#00ff41"/></svg>`,
+    ghost: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 80 L20 40 Q20 10 50 10 Q80 10 80 40 L80 80 L65 70 L50 80 L35 70 Z" fill="#ffee00" stroke="#fff" stroke-width="2"/><rect x="35" y="35" width="10" height="10" fill="#000"/><rect x="55" y="35" width="10" height="10" fill="#000"/><rect x="40" y="55" width="20" height="5" fill="#000"/></svg>`,
+    mech: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="20" width="60" height="60" fill="#ff5500" stroke="#fff" stroke-width="4"/><path d="M20 20 L10 10" stroke="#fff" stroke-width="4"/><path d="M80 20 L90 10" stroke="#fff" stroke-width="4"/><rect x="30" y="30" width="40" height="20" fill="#00f3ff"/><line x1="20" y1="50" x2="80" y2="50" stroke="#000" stroke-width="2"/><rect x="35" y="60" width="30" height="10" fill="#333"/></svg>`,
+    glitch: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="25" y="20" width="50" height="60" fill="#fff"/><rect x="30" y="30" width="15" height="15" fill="#000"/><rect x="55" y="30" width="15" height="15" fill="#000"/><rect x="35" y="60" width="30" height="5" fill="#000"/><path d="M20 40 L80 40" stroke="red" stroke-width="2"/><path d="M25 70 L75 70" stroke="blue" stroke-width="2"/></svg>`
+};
+
 // 角色資料
 const CHARACTERS = [
-    { id: 'robot', emoji: '🤖', name: 'BitBot', color: '#00f3ff', weapon: '#00f3ff' },
-    { id: 'cat', emoji: '🐱', name: 'CyberCat', color: '#ff00ff', weapon: '#ff00ff' },
-    { id: 'ninja', emoji: '🥷', name: 'NeonNinja', color: '#00ff41', weapon: '#00ff41' },
-    { id: 'alien', emoji: '👽', name: 'X-Code', color: '#ffee00', weapon: '#ffee00' },
-    { id: 'fox', emoji: '🦊', name: 'FireFox', color: '#ff5500', weapon: '#ff5500' },
-    { id: 'skull', emoji: '💀', name: 'Glitch', color: '#ffffff', weapon: '#ff3333' }
+    { id: 'robot', svg: SVG_CHARS.robot, name: 'BitBot', color: '#00f3ff', weapon: '#00f3ff' },
+    { id: 'cat', svg: SVG_CHARS.cat, name: 'CyberCat', color: '#ff00ff', weapon: '#ff00ff' },
+    { id: 'ninja', svg: SVG_CHARS.ninja, name: 'NetNinja', color: '#00ff41', weapon: '#00ff41' },
+    { id: 'ghost', svg: SVG_CHARS.ghost, name: 'DataGhost', color: '#ffee00', weapon: '#ffee00' },
+    { id: 'mech', svg: SVG_CHARS.mech, name: 'FireWall', color: '#ff5500', weapon: '#ff5500' },
+    { id: 'glitch', svg: SVG_CHARS.glitch, name: 'BugZero', color: '#ffffff', weapon: '#ff3333' }
 ];
 
 // 題庫 (15題)
@@ -700,6 +750,7 @@ const STATE = {
 let currentState = STATE.START;
 let canvas, ctx;
 let lastTime = 0;
+let charImages = {}; // 快取角色圖片
 
 // 遊戲數據
 let gameData = {
@@ -720,8 +771,8 @@ let gameData = {
 let runner = {
     x: 100,
     y: 0,
-    w: 40,
-    h: 40,
+    w: 50, // 稍微加大
+    h: 50,
     vy: 0,
     grounded: false,
     invincible: false,
@@ -750,6 +801,9 @@ window.onload = function() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
+    // 預載角色圖片
+    preloadCharacters();
+
     setupStartScreen();
     bindEvents();
     
@@ -759,6 +813,16 @@ window.onload = function() {
 function resizeCanvas() {
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
+}
+
+function preloadCharacters() {
+    CHARACTERS.forEach(char => {
+        const img = new Image();
+        const svgBlob = new Blob([char.svg], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(svgBlob);
+        img.src = url;
+        charImages[char.id] = img;
+    });
 }
 
 function bindEvents() {
@@ -791,6 +855,7 @@ function bindEvents() {
     document.getElementById('retry-level-btn').addEventListener('click', restartLevel);
     document.getElementById('retry-quiz-level-btn').addEventListener('click', restartLevel);
     document.getElementById('restart-btn').addEventListener('click', resetGame);
+    document.getElementById('continue-game-btn').addEventListener('click', proceedToNextLevel);
 }
 
 function setupStartScreen() {
@@ -798,8 +863,10 @@ function setupStartScreen() {
     CHARACTERS.forEach((char, index) => {
         const card = document.createElement('div');
         card.className = 'char-card' + (index === 0 ? ' selected' : '');
-        card.innerHTML = char.emoji;
+        card.innerHTML = char.svg; // 顯示 SVG
         card.onclick = () => selectCharacter(index);
+        // 添加 tooltip
+        card.title = char.name;
         container.appendChild(card);
     });
 }
@@ -926,7 +993,6 @@ function gameLoop(timestamp) {
     checkCollisions();
     drawGame();
     
-    // 持續更新HUD (主要是進度條)
     updateHUD();
 
     if (runner.distance >= CONFIG.levelDistance) {
@@ -1195,10 +1261,11 @@ function drawGame() {
         t.x -= CONFIG.baseSpeed * runner.speedModifier * 0.16; 
         ctx.save();
         ctx.globalAlpha = t.alpha * 0.3;
-        ctx.font = "40px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(gameData.character.emoji, t.x + runner.w/2, t.y + runner.h/2);
+        // 繪製殘影 (使用快取圖片)
+        let img = charImages[gameData.character.id];
+        if (img) {
+            ctx.drawImage(img, t.x, t.y, runner.w, runner.h);
+        }
         
         if(t.attacking) {
              ctx.strokeStyle = gameData.character.weapon;
@@ -1217,12 +1284,13 @@ function drawGame() {
         ctx.globalAlpha = 0.5;
     }
     
-    ctx.font = "40px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.shadowColor = gameData.character.color;
     ctx.shadowBlur = 20;
-    ctx.fillText(gameData.character.emoji, runner.x + runner.w/2, runner.y + runner.h/2);
+    // 繪製角色 (使用快取圖片)
+    let img = charImages[gameData.character.id];
+    if (img) {
+        ctx.drawImage(img, runner.x, runner.y, runner.w, runner.h);
+    }
     ctx.shadowBlur = 0;
 
     if (runner.isAttacking) {
@@ -1382,21 +1450,36 @@ function showMessage(text) {
 }
 
 /**
- * 答題系統 (與原版相同)
+ * 答題系統 (已更新: 全螢幕遮罩 + 手動繼續)
  */
 function startQuizPhase() {
     currentState = STATE.QUIZ;
     document.getElementById('quiz-screen').classList.remove('hidden');
-    document.getElementById('mobile-controls').classList.add('hidden'); // 隱藏按鈕
-    startQuizCountdown(5, () => { loadQuestion(0); });
+    document.getElementById('mobile-controls').classList.add('hidden');
+    
+    // 初始化畫面狀態：顯示倒數層，隱藏答題層和結果層
+    document.getElementById('quiz-container').classList.add('hidden');
+    document.getElementById('quiz-result-overlay').classList.add('hidden');
+    document.getElementById('quiz-countdown-overlay').classList.remove('hidden');
+    
+    // 清空題目以防殘影
+    document.getElementById('quiz-question').innerText = "";
+    document.getElementById('quiz-options').innerHTML = "";
+
+    startQuizCountdown(3, () => { 
+        // 倒數結束
+        document.getElementById('quiz-container').classList.remove('hidden');
+        loadQuestion(0); 
+    });
 }
 
 function startQuizCountdown(seconds, callback) {
     const overlay = document.getElementById('quiz-countdown-overlay');
     const timerEl = document.getElementById('quiz-pre-timer');
-    overlay.classList.remove('hidden');
+    
     let count = seconds;
     timerEl.innerText = count;
+    
     const interval = setInterval(() => {
         count--;
         timerEl.innerText = count;
@@ -1448,11 +1531,26 @@ function checkAnswer(selected, correct, btnElement) {
 }
 
 function finishQuizPhase() {
+    // 答題全部結束，隱藏題目框，顯示結果確認框
+    document.getElementById('quiz-container').classList.add('hidden');
+    
+    const resultOverlay = document.getElementById('quiz-result-overlay');
+    const scoreSpan = document.getElementById('level-quiz-score');
+    
+    scoreSpan.innerText = `${gameData.levelCorrectCount} / ${CONFIG.questionsPerLevel}`;
+    resultOverlay.classList.remove('hidden');
+}
+
+// 點擊「繼續冒險」後的邏輯
+function proceedToNextLevel() {
     document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('quiz-result-overlay').classList.add('hidden');
+
     if (gameData.levelCorrectCount >= 1) {
         if (gameData.currentLevel >= CONFIG.totalLevels) {
             showEndScreen();
         } else {
+            document.getElementById('mobile-controls').classList.remove('hidden');
             startLevel(gameData.currentLevel + 1);
         }
     } else {
