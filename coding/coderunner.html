@@ -27,13 +27,17 @@
             padding: 0;
             background-color: var(--bg-color);
             font-family: 'Noto Sans TC', sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* 防止滾動 */
             color: white;
             height: 100vh;
             width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: fixed; /* 強制鎖定視窗，避免手機下滑 */
+            top: 0;
+            left: 0;
+            touch-action: none; /* 禁止預設觸控行為 */
         }
 
         /* 背景網格動畫 */
@@ -135,7 +139,7 @@
             background: var(--neon-green);
             color: black;
             box-shadow: 0 0 30px var(--neon-green);
-            transform: translateY(-2px) scale(1.05);
+            transform: scale(1.05); /* 改為僅縮放，避免位移 */
         }
 
         /* 初始畫面佈局 */
@@ -339,7 +343,7 @@
             margin-top: auto;
             margin-bottom: auto;
             position: relative;
-            z-index: 30; /* Ensure it's above other elements */
+            z-index: 30;
         }
         
         #quiz-screen {
@@ -351,12 +355,12 @@
         #quiz-countdown-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,1); /* 完全不透明背景 */
+            background: rgba(0,0,0,1);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 50; /* Top most */
+            z-index: 50;
         }
 
         /* 結果遮罩 */
@@ -396,11 +400,17 @@
             transition: 0.2s;
             border-radius: 5px;
             font-size: 1rem;
+            border-left: 5px solid transparent; 
+            margin: 0; /* 確保沒有額外 margin 導致溢出 */
+            width: 100%; /* 確保寬度正確 */
         }
 
-        .option-btn:hover {
+        /* 滑鼠懸停與鍵盤選擇的樣式 - 移除 translateX 以避免切邊 */
+        .option-btn:hover, .option-btn.key-selected {
             background: rgba(0, 243, 255, 0.2);
-            transform: translateX(5px);
+            /* transform: translateX(5px); 已移除，避免左邊界被切掉 */
+            border-color: var(--neon-blue);
+            border-left-color: var(--neon-yellow);
         }
 
         .option-btn.correct {
@@ -419,7 +429,7 @@
         .stat-row {
             display: flex;
             justify-content: space-between;
-            width: 250px;
+            width: 300px;
             margin: 8px 0;
             font-size: 1rem;
             border-bottom: 1px solid #333;
@@ -511,14 +521,17 @@
                 align-items: center;
                 gap: 10px;
                 overflow-y: auto;
+                height: auto; /* 允許內容撐開 */
+                max-height: 65vh; /* 限制高度，避免擋住按鈕 */
+                padding-bottom: 20px;
             }
             .instructions {
                 font-size: 0.8rem;
                 max-height: 150px;
             }
             h1 { font-size: 1.8rem; }
-            .btn { padding: 10px 30px; font-size: 1.1rem; margin-bottom: 10px;}
-            .char-card { width: 60px; height: 60px; }
+            .btn { padding: 10px 30px; font-size: 1.1rem; margin-bottom: 20px;} /* 增加底部距離 */
+            .char-card { width: 55px; height: 55px; } /* 稍微調小避免太寬 */
             .mobile-hint { display: none; }
             
             .hud-center { width: 50%; }
@@ -529,7 +542,7 @@
 <body>
 
     <div class="cyber-grid"></div>
-
+    
     <div id="game-container">
         
         <!-- Canvas Layer -->
@@ -590,8 +603,7 @@
                             <li><strong>跳躍 (Jump)：</strong><br>PC: <span style="color:var(--neon-yellow)">[空白鍵]</span> | Mobile: <span style="color:var(--neon-yellow)">[JUMP]</span></li>
                             <li><strong>斬擊 (Slash)：</strong><br>PC: <span style="color:var(--neon-pink)">[Z鍵]</span> | Mobile: <span style="color:var(--neon-pink)">[SLASH]</span><br>
                             <em style="color:#aaa; font-size:0.8em;">攻擊可破壞障礙物並短暫滯空。</em></li>
-                            <li><strong>目標：</strong><br>一邊跑酷斬殺敵人，一邊回答程式知識。</li>
-                            <li><strong>道具：</strong><br>💰加分、⚡加速、🐢減速、⭐無敵。</li>
+                            <li><strong>答題 (Quiz)：</strong><br>可用滑鼠或 <span style="color:var(--neon-green)">[↑↓]</span> 鍵選擇，<span style="color:var(--neon-green)">[Enter]</span> 確認。</li>
                         </ul>
                     </div>
                 </div>
@@ -622,11 +634,12 @@
                 <p style="margin-top:20px; color:#aaa;">解除防火牆鎖定</p>
             </div>
             
-            <!-- 答題結果遮罩 (新增) -->
+            <!-- 答題結果遮罩 -->
             <div id="quiz-result-overlay" class="hidden">
                 <h2 style="color:var(--neon-green); font-size: 2.5rem; margin-bottom:20px;">SYSTEM SYNCED</h2>
                 <p style="font-size: 1.5rem; margin-bottom:30px;">本關答對題數: <span id="level-quiz-score" style="color:var(--neon-yellow)">-</span></p>
                 <button class="btn" id="continue-game-btn">繼續冒險 (CONTINUE)</button>
+                <p style="font-size: 0.8rem; color:#aaa; margin-top:10px;">按 [Enter] 或 [Space] 繼續</p>
             </div>
 
             <div id="quiz-container" class="hidden">
@@ -687,7 +700,7 @@ const CONFIG = {
     gravity: 0.6,
     jumpStrength: -13, 
     baseSpeed: 3.5,
-    maxHp: 3,
+    maxHp: 10, // 增加血量到 10
     levelDistance: 1000, 
     totalLevels: 5,
     questionsPerLevel: 2,
@@ -717,7 +730,7 @@ const CHARACTERS = [
 ];
 
 // 題庫 (15題)
-const QUESTION_BANK = [
+let QUESTION_BANK = [
     { q: "人類與電腦之間進行溝通的橋樑，我們稱之為什麼？", options: ["演算法", "程式語言", "流程圖", "虛擬碼"], ans: 1 },
     { q: "下列哪一種語言是電腦唯一能夠「直接」理解並執行的語言？", options: ["組合語言", "高階語言", "機器語言", "自然語言"], ans: 2 },
     { q: "機器語言的指令是由哪兩個數字符號所組成的？", options: ["1 與 2", "0 與 1", "A 與 Z", "0 與 9"], ans: 1 },
@@ -750,7 +763,8 @@ const STATE = {
 let currentState = STATE.START;
 let canvas, ctx;
 let lastTime = 0;
-let charImages = {}; // 快取角色圖片
+let charImages = {};
+let quizSelectionIndex = -1; 
 
 // 遊戲數據
 let gameData = {
@@ -758,7 +772,7 @@ let gameData = {
     character: CHARACTERS[0],
     score: 0,
     currentLevel: 1,
-    hp: 3,
+    hp: 10, // 初始 HP 設為 10
     questionsAnswered: 0,
     questionsCorrect: 0,
     levelQuestions: [], 
@@ -771,7 +785,7 @@ let gameData = {
 let runner = {
     x: 100,
     y: 0,
-    w: 50, // 稍微加大
+    w: 50,
     h: 50,
     vy: 0,
     grounded: false,
@@ -780,7 +794,6 @@ let runner = {
     distance: 0,
     speedModifier: 1,
     trail: [],
-    // 戰鬥屬性
     isAttacking: false,
     attackTimer: 0,
     cooldownTimer: 0
@@ -801,9 +814,7 @@ window.onload = function() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // 預載角色圖片
     preloadCharacters();
-
     setupStartScreen();
     bindEvents();
     
@@ -827,29 +838,39 @@ function preloadCharacters() {
 
 function bindEvents() {
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.code === 'ArrowUp') {
-            handleJump();
-        }
-        if (e.code === 'KeyZ' || e.code === 'KeyK') {
-            handleAttack();
+        if (currentState === STATE.RUNNING) {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                handleJump();
+            }
+            if (e.code === 'KeyZ' || e.code === 'KeyK') {
+                handleAttack();
+            }
+        } else if (currentState === STATE.QUIZ) {
+            const quizContainer = document.getElementById('quiz-container');
+            const resultOverlay = document.getElementById('quiz-result-overlay');
+            
+            // 答題中
+            if (!quizContainer.classList.contains('hidden')) {
+                if (['ArrowUp', 'ArrowDown', 'Space', 'Enter'].includes(e.code)) {
+                    e.preventDefault();
+                    handleQuizInput(e.code);
+                }
+            } 
+            // 結果畫面
+            else if (!resultOverlay.classList.contains('hidden')) {
+                if (e.code === 'Enter' || e.code === 'Space') {
+                     e.preventDefault();
+                     proceedToNextLevel();
+                }
+            }
         }
     });
 
-    // Mobile Controls
-    document.getElementById('m-jump-btn').addEventListener('touchstart', (e) => {
-        e.preventDefault(); handleJump();
-    });
-    document.getElementById('m-attack-btn').addEventListener('touchstart', (e) => {
-        e.preventDefault(); handleAttack();
-    });
-    
-    // Mouse fallback
-    document.getElementById('m-jump-btn').addEventListener('mousedown', (e) => {
-        handleJump();
-    });
-    document.getElementById('m-attack-btn').addEventListener('mousedown', (e) => {
-        handleAttack();
-    });
+    document.getElementById('m-jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); handleJump(); });
+    document.getElementById('m-attack-btn').addEventListener('touchstart', (e) => { e.preventDefault(); handleAttack(); });
+    document.getElementById('m-jump-btn').addEventListener('mousedown', (e) => { handleJump(); });
+    document.getElementById('m-attack-btn').addEventListener('mousedown', (e) => { handleAttack(); });
 
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('retry-level-btn').addEventListener('click', restartLevel);
@@ -858,14 +879,45 @@ function bindEvents() {
     document.getElementById('continue-game-btn').addEventListener('click', proceedToNextLevel);
 }
 
+function handleQuizInput(code) {
+    const options = document.querySelectorAll('.option-btn');
+    if (options.length === 0) return;
+
+    if (code === 'ArrowUp') {
+        if (quizSelectionIndex === -1) quizSelectionIndex = options.length - 1;
+        else quizSelectionIndex--;
+        if (quizSelectionIndex < 0) quizSelectionIndex = options.length - 1;
+        updateQuizSelectionUI();
+    } else if (code === 'ArrowDown') {
+        if (quizSelectionIndex === -1) quizSelectionIndex = 0;
+        else quizSelectionIndex++;
+        if (quizSelectionIndex >= options.length) quizSelectionIndex = 0;
+        updateQuizSelectionUI();
+    } else if (code === 'Enter' || code === 'Space') {
+        if (quizSelectionIndex >= 0 && quizSelectionIndex < options.length) {
+            options[quizSelectionIndex].click();
+        }
+    }
+}
+
+function updateQuizSelectionUI() {
+    const options = document.querySelectorAll('.option-btn');
+    options.forEach((btn, idx) => {
+        if (idx === quizSelectionIndex) {
+            btn.classList.add('key-selected');
+        } else {
+            btn.classList.remove('key-selected');
+        }
+    });
+}
+
 function setupStartScreen() {
     const container = document.getElementById('char-select');
     CHARACTERS.forEach((char, index) => {
         const card = document.createElement('div');
         card.className = 'char-card' + (index === 0 ? ' selected' : '');
-        card.innerHTML = char.svg; // 顯示 SVG
+        card.innerHTML = char.svg;
         card.onclick = () => selectCharacter(index);
-        // 添加 tooltip
         card.title = char.name;
         container.appendChild(card);
     });
@@ -904,17 +956,16 @@ function handleAttack() {
     }
 }
 
-/**
- * 遊戲流程控制
- */
 function startGame() {
-    const nameInput = document.getElementById('player-name').value;
-    if (nameInput.trim() !== "") gameData.playerName = nameInput;
+    const nameInput = document.getElementById('player-name');
+    if (nameInput.value.trim() !== "") gameData.playerName = nameInput.value;
+    nameInput.blur(); // 重要：移除輸入框焦點，避免干擾鍵盤控制
 
     document.getElementById('start-screen').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
     document.getElementById('mobile-controls').classList.remove('hidden');
     
+    resizeCanvas(); // 確保畫布尺寸正確
     resetGameData();
     startLevel(1);
 }
@@ -955,6 +1006,11 @@ function startLevel(level) {
     currentState = STATE.RUNNING;
     
     let qIndexStart = (level - 1) * CONFIG.questionsPerLevel;
+    // 如果題目不夠，循環使用
+    if (qIndexStart >= QUESTION_BANK.length) {
+         shuffleArray(QUESTION_BANK);
+         qIndexStart = 0;
+    }
     gameData.levelQuestions = QUESTION_BANK.slice(qIndexStart, qIndexStart + CONFIG.questionsPerLevel);
 
     showMessage(`LEVEL ${level} START!`);
@@ -974,11 +1030,9 @@ function resetGame() {
     document.getElementById('end-screen').classList.add('hidden');
     document.getElementById('start-screen').classList.remove('hidden');
     document.getElementById('mobile-controls').classList.add('hidden');
+    shuffleArray(QUESTION_BANK);
 }
 
-/**
- * 跑酷邏輯
- */
 function gameLoop(timestamp) {
     if (currentState !== STATE.RUNNING) return;
 
@@ -1202,6 +1256,32 @@ function getPowerupName(type) {
     }
 }
 
+function createParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            life: 1.0,
+            size: Math.random() * 5 + 2,
+            color: color
+        });
+    }
+}
+
+function rectIntersect(r1, r2) {
+    return !(r2.x > r1.x + r1.w || 
+             r2.x + r2.w < r1.x || 
+             r2.y > r1.y + r1.h || 
+             r2.y + r2.h < r1.y);
+}
+
+function shakeScreen() {
+    let intensity = 15;
+    canvas.style.transform = `translate(${Math.random()*intensity-intensity/2}px, ${Math.random()*intensity-intensity/2}px)`;
+    setTimeout(() => canvas.style.transform = 'none', 100);
+}
+
 function createShockwave(x, y, color) {
     shockwaves.push({x: x, y: y, radius: 10, alpha: 1, color: color});
 }
@@ -1261,10 +1341,12 @@ function drawGame() {
         t.x -= CONFIG.baseSpeed * runner.speedModifier * 0.16; 
         ctx.save();
         ctx.globalAlpha = t.alpha * 0.3;
-        // 繪製殘影 (使用快取圖片)
         let img = charImages[gameData.character.id];
-        if (img) {
+        if (img && img.complete && img.naturalWidth !== 0) {
             ctx.drawImage(img, t.x, t.y, runner.w, runner.h);
+        } else {
+            ctx.fillStyle = gameData.character.color;
+            ctx.fillRect(t.x, t.y, runner.w, runner.h);
         }
         
         if(t.attacking) {
@@ -1286,10 +1368,15 @@ function drawGame() {
     
     ctx.shadowColor = gameData.character.color;
     ctx.shadowBlur = 20;
-    // 繪製角色 (使用快取圖片)
+    
+    // 繪製角色 (修正：增加載入檢測與 fallback)
     let img = charImages[gameData.character.id];
-    if (img) {
+    if (img && img.complete && img.naturalWidth !== 0) {
         ctx.drawImage(img, runner.x, runner.y, runner.w, runner.h);
+    } else {
+        // 如果 SVG 尚未載入完成，繪製方塊代替
+        ctx.fillStyle = gameData.character.color;
+        ctx.fillRect(runner.x, runner.y, runner.w, runner.h);
     }
     ctx.shadowBlur = 0;
 
@@ -1399,39 +1486,12 @@ function drawGame() {
     });
 }
 
-function createParticles(x, y, count, color) {
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 15,
-            vy: (Math.random() - 0.5) * 15,
-            life: 1.0,
-            size: Math.random() * 5 + 2,
-            color: color
-        });
-    }
-}
-
-function rectIntersect(r1, r2) {
-    return !(r2.x > r1.x + r1.w || 
-             r2.x + r2.w < r1.x || 
-             r2.y > r1.y + r1.h || 
-             r2.y + r2.h < r1.y);
-}
-
-function shakeScreen() {
-    let intensity = 15;
-    canvas.style.transform = `translate(${Math.random()*intensity-intensity/2}px, ${Math.random()*intensity-intensity/2}px)`;
-    setTimeout(() => canvas.style.transform = 'none', 100);
-}
-
 function updateHUD() {
     document.getElementById('hud-level').innerText = `LEVEL ${gameData.currentLevel}`;
     document.getElementById('hud-score').innerText = gameData.score;
     let hpPercent = (gameData.hp / CONFIG.maxHp) * 100;
     document.getElementById('hp-bar').style.width = `${hpPercent}%`;
     
-    // 更新進度條
     let progress = Math.min(100, (runner.distance / CONFIG.levelDistance) * 100);
     document.getElementById('level-progress-bar').style.width = `${progress}%`;
 }
@@ -1449,25 +1509,19 @@ function showMessage(text) {
     }, 800);
 }
 
-/**
- * 答題系統 (已更新: 全螢幕遮罩 + 手動繼續)
- */
 function startQuizPhase() {
     currentState = STATE.QUIZ;
     document.getElementById('quiz-screen').classList.remove('hidden');
     document.getElementById('mobile-controls').classList.add('hidden');
     
-    // 初始化畫面狀態：顯示倒數層，隱藏答題層和結果層
     document.getElementById('quiz-container').classList.add('hidden');
     document.getElementById('quiz-result-overlay').classList.add('hidden');
     document.getElementById('quiz-countdown-overlay').classList.remove('hidden');
     
-    // 清空題目以防殘影
     document.getElementById('quiz-question').innerText = "";
     document.getElementById('quiz-options').innerHTML = "";
 
     startQuizCountdown(3, () => { 
-        // 倒數結束
         document.getElementById('quiz-container').classList.remove('hidden');
         loadQuestion(0); 
     });
@@ -1494,6 +1548,9 @@ function startQuizCountdown(seconds, callback) {
 let currentQuestionIndex = 0;
 function loadQuestion(index) {
     currentQuestionIndex = index;
+    // 重置鍵盤選擇索引
+    quizSelectionIndex = -1;
+    
     if (index >= gameData.levelQuestions.length) {
         finishQuizPhase();
         return;
@@ -1531,7 +1588,6 @@ function checkAnswer(selected, correct, btnElement) {
 }
 
 function finishQuizPhase() {
-    // 答題全部結束，隱藏題目框，顯示結果確認框
     document.getElementById('quiz-container').classList.add('hidden');
     
     const resultOverlay = document.getElementById('quiz-result-overlay');
@@ -1541,7 +1597,6 @@ function finishQuizPhase() {
     resultOverlay.classList.remove('hidden');
 }
 
-// 點擊「繼續冒險」後的邏輯
 function proceedToNextLevel() {
     document.getElementById('quiz-screen').classList.add('hidden');
     document.getElementById('quiz-result-overlay').classList.add('hidden');
@@ -1558,9 +1613,6 @@ function proceedToNextLevel() {
     }
 }
 
-/**
- * 結算系統
- */
 function showEndScreen() {
     currentState = STATE.VICTORY;
     document.getElementById('end-screen').classList.remove('hidden');
