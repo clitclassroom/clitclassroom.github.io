@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>數位情報解碼 | 程式語言初探</title>
+    <!-- ★★★ 網站小圖示 (Favicon) ★★★ -->
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    
     <!-- 引入 Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <!-- 引入 FontAwesome -->
@@ -123,6 +126,15 @@
 
         .nav-links a:hover::after {
             width: 100%;
+        }
+
+        /* 特別強調 Code Runner 連結 */
+        .nav-links a.special-link {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        .nav-links a.special-link::after {
+            background-color: var(--accent-color);
         }
 
         /* --- Hero Section --- */
@@ -298,7 +310,7 @@
             border-radius: 10px;
             padding: 30px;
             max-width: 800px;
-            margin: 0 auto 100px;
+            margin: 0 auto 50px; /* 調整 margin 讓連結區塊靠近 */
             font-family: 'Courier New', monospace;
             box-shadow: 0 0 30px rgba(255, 230, 0, 0.2);
             position: relative;
@@ -420,6 +432,37 @@
             font-family: 'Orbitron', sans-serif;
         }
 
+        /* --- Link Block for Code Runner --- */
+        .link-block {
+            text-align: center;
+            margin: 50px auto 20px;
+            padding: 40px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(0, 243, 255, 0.05);
+            max-width: 800px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .link-block:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(255, 230, 0, 0.1);
+        }
+
+        /* --- Footer Styles --- */
+        .footer-icon {
+            font-size: 2.5rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: color 0.3s, transform 0.3s, text-shadow 0.3s;
+        }
+        .footer-icon:hover {
+            color: var(--primary-color);
+            transform: scale(1.2) rotate(5deg);
+            text-shadow: 0 0 15px var(--primary-color);
+        }
+
         /* --- 手機版適應 --- */
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
@@ -452,6 +495,10 @@
             <a href="#intro" class="hover-trigger">情報解密</a>
             <a href="#battle" class="hover-trigger">流派對決</a>
             <a href="#game" class="hover-trigger">實戰演練</a>
+            <!-- ★★★ 新增 Code Runner 連結 ★★★ -->
+            <a href="https://clitclassroom.github.io/coding/coderunner.html" target="_blank" class="hover-trigger special-link">
+                <i class="fas fa-gamepad"></i> Code Runner
+            </a>
         </div>
     </nav>
 
@@ -635,11 +682,30 @@
                 <button class="btn-glitch" onclick="resetGame()" style="margin-top: 30px;">重新挑戰 RESTART</button>
             </div>
         </div>
+
+        <!-- ★★★ 新增 Code Runner 引導區塊 ★★★ -->
+        <div class="link-block hover-trigger">
+            <h3 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 15px;">
+                <i class="fas fa-laptop-code"></i> 進階修練場開放
+            </h3>
+            <p style="color: var(--text-dim); margin-bottom: 25px; font-size: 1.2rem; line-height: 1.6;">
+                測驗只是開始...<br>你準備好進入 <strong>Code Runner</strong> 進行真正的程式碼冒險了嗎？
+            </p>
+            <a href="https://clitclassroom.github.io/coding/coderunner.html" target="_blank" class="btn-glitch hover-trigger" style="text-decoration: none; display: inline-block; padding: 15px 50px;">
+                啟動 Code Runner <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+            </a>
+        </div>
     </section>
 
+    <!-- Footer -->
     <footer style="text-align: center; padding: 40px; color: var(--text-dim); border-top: 1px solid #333;">
-        <p><i class="fas fa-code"></i> POWERED BY 國中資訊科技團隊 | 數位情報解碼</p>
-        <p style="font-size: 0.8rem; margin-top: 10px;">學習是為了駕馭科技，而不是被科技駕馭。</p>
+        <!-- Github Icon -->
+        <a href="https://clitclassroom.github.io/" target="_blank" class="footer-icon hover-trigger" title="Visit CLIT Classroom">
+            <i class="fab fa-github"></i>
+        </a>
+        
+        <p style="font-weight: bold; margin-bottom: 10px;">&copy; 2025 CLIT Classroom | 國中資訊科技</p>
+        <p style="font-size: 0.9rem; margin-top: 5px;">Content: About Coding</p>
     </footer>
 
     <script>
