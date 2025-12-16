@@ -14,6 +14,7 @@
     <script>
         // --- 設定區 ---
         // 請確保此網址正確，且權限為「任何人 (Anyone)」
+        // 部署時請務必選擇「新版本 (New Version)」
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzlRDfHbAjfitGg_GUud_DcfvbcJz_5kyoCDuTdieCJlETz0ttLp-zQTf0HKneiJ37L0g/exec";
 
         // Mock Data (在無法連線時顯示的假資料)
@@ -526,7 +527,7 @@
                     INITIALIZE SYSTEM
                 </button>
                 <div class="mt-4 text-center text-neon-red text-xs font-bold bg-black/30 p-2 rounded border border-neon-red">
-                    ⚠️ 本遊戲僅限電腦版遊玩 (PC/Laptop Only)
+                    ⚠️ 本遊戲僅限電腦版遊玩 (PC/Desktop Only)
                 </div>
 
                 <!-- Protocol Warning -->
@@ -1271,6 +1272,8 @@
             // If result view is visible, Enter resumes game
             if(!document.getElementById('resultView').classList.contains('hidden')) {
                 if(e.key === 'Enter') {
+                    // 重要：阻止預設事件，避免觸發按鈕點擊 (防止 resumeGame 被呼叫兩次)
+                    e.preventDefault();
                     resumeGame();
                 }
                 return;
@@ -1373,11 +1376,15 @@
         }
 
         function resumeGame() {
+            // 防呆機制：如果問答視窗已經關閉，就不執行（防止連點或 Enter + Click 雙重觸發）
+            const modal = document.getElementById('quizModal');
+            if (modal.classList.contains('hidden')) return;
+
             // If HP <= 0, game over handles transition
             if(hp <= 0) return;
 
-            document.getElementById('quizModal').classList.add('hidden');
-            document.getElementById('quizModal').classList.remove('flex');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
             quizInputActive = false;
             
             let f = flags.find(flag => flag.id === currentFlagTarget);
@@ -1494,5 +1501,4 @@
         .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
     </style>
 </body>
-
 </html>
