@@ -86,12 +86,16 @@
         const Users = (p) => <IconBase {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></IconBase>;
         const FileSpreadsheet = (p) => <IconBase {...p}><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M8 13h2" /><path d="M14 13h2" /> <path d="M8 17h2" /><path d="M14 17h2" /></IconBase>
         const User = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></IconBase>;
+        const ToolCase = (p) => (<IconBase {...p}><path d="M10 15h4" /><path d="m14.817 10.995-.971-1.45 1.034-1.232a2 2 0 0 0-2.025-3.238l-1.82.364L9.91 3.885a2 2 0 0 0-3.625.748L6.141 6.55l-1.725.426a2 2 0 0 0-.19 3.756l.657.27" /><path d="m18.822 10.995 2.26-5.38a1 1 0 0 0-.557-1.318L16.954 2.9a1 1 0 0 0-1.281.533l-.924 2.122" /><path d="M4 12.006A1 1 0 0 1 4.994 11H19a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /></IconBase>
+);
 
         // ==========================================
         // 資料設定區
         // ==========================================
 
         const SYSTEM_LOGS = [
+            { id: 114, date: '2025.12.25', category: 'TOOLS', title: '新增實用小工具模組', highlight: true },
+            { id: 113, date: '2025.12.25', category: 'LOGIC', title: 'Scratch動畫與遊戲:小遊戲Whack A Mole Game', highlight: true },
             { id: 112, date: '2025.12.14', category: 'DECODE', title: '解鎖電腦的術士:程式語言簡介', highlight: true },
             { id: 111, date: '2025.12.11', category: 'QUIZSYSTEM', title: 'Quizsystem:新增檢測與測驗模組', highlight: true },
             { id: 110, date: '2025.12.07', category: 'DECODE', title: 'Platform: 系統平台進化事件簿', link: 'https://clitclassroom.github.io/platform/platformP3.html',highlight: true },
@@ -109,7 +113,7 @@
         const CORE_STATUS = {
             active: true,
             level: 'WARNING',
-            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 ///解鎖電腦的術式:程式語言簡介。 ///新增檢測與測驗系統模組。 ///系統平台進化事件簿上線。 /// 演算法特攻新上線。 ///核心保衛戰新上線。 ///系統平台大冒險上線。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
+            message: '注意：近期釣魚郵件攻擊頻繁，請詳閱「網路攻防」模組中的最新防護指南。 ///新增實用小工具模組。 ///更新程式邏輯架構-Scratch課程。 ///解鎖電腦的術式:程式語言簡介。 ///新增檢測與測驗系統模組。 ///系統平台進化事件簿上線。 /// 演算法特攻新上線。 ///核心保衛戰新上線。 ///系統平台大冒險上線。 /// 114上資訊課程陸續更新中，請注意作業繳交期限。'
         };
 
         const MODULES = [
@@ -201,7 +205,18 @@
                 ]
             },
             {
-                // 新增：指揮官模組
+                // 實用小工具模組
+                id: 'tools', name: '實用小工具', sub: 'Online Tools',
+                icon: <ToolCase size={24} />, color: 'text-stone-400', borderColor: 'border-stone-400/50', shadowColor: 'rgba(239, 68, 68, 0.6)',
+                description: '線上實用小工具', 
+                links: [
+                    { title: 'PDF 試題轉 Excel 轉換器', url: 'https://clitclassroom.github.io/tools/pdf_exam_converter.html', tag: 'NEW'},
+                    { title: '線上計時器(小時版)', url: 'https://clitclassroom.github.io/tools/onlinetimerHour.html', tag:'NEW'},
+                    { title: '線上計時器(分鐘版)', url: 'https://clitclassroom.github.io/tools/onlinetimerMin.html', tag:'NEW' },
+                ]
+            },
+            { 
+                // 指揮官模組
                 id: 'commander', name: '關於指揮官', sub: 'Commander Profile',
                 icon: <User size={24} />, color: 'text-cyan-400', borderColor: 'border-cyan-400/50', shadowColor: 'rgba(34, 211, 238, 0.4)',
                 description: 'About Carey - 國中資訊科技教師',
