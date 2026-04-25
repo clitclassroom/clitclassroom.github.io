@@ -3,6 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYIT Protocol Initializing...</title>
+    
+    <!-- 加入 noscript 的備用轉址，若使用者的瀏覽器停用 JavaScript，仍可立即轉址 -->
+    <noscript>
+        <meta http-equiv="refresh" content="0;url=https://cyclassroom.github.io/myweb/">
+    </noscript>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            /* 定義駭客終端機的螢光綠色 */
+            --terminal-green: #39FF14;
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--terminal-green);
+            font-family: 'Courier New', Courier, monospace;
+            /* 防止頁面在動畫期間出現捲軸 */
+            overflow: hidden; 
+        }
+
+        /* 文字發光效果 */
+        .text-glow {
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.6), 0 0 10px rgba(57, 255, 20, 0.4);
+        }
+
+        /* 進度條發光效果 */
+        .bar-glow {
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
+            background-color: var(--terminal-green);
+        }
+
+        /* 終端機游標閃爍動畫 */
+        .cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+            margin-left: 4px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* 隱藏的 log 訊息，用於動畫淡入 */
+        .log-line {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        .log-line.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen selection:bg-green-900 selection:text-green-100">
+
+    <div class="flex flex-col items-center w-full max-w-3xl px-4">
+        
+        <!-- 主標題 -->
+        <h1 id="main-text" class="text-xl sm:text-2xl md:text-3xl mb-4 font-bold tracking-widest text-glow text-center cursor">
+            INITIALIZING CYIT PROTOCOL...
+        </h1>
+
+        <!-- 進度條外框 -->
+        <div class="w-full sm:w-3/4 md:w-2/3 h-2 md:h-3 bg-gray-900 rounded-full mb-6 relative overflow-hidden">
+            <!-- 進度條本體 -->
+            <div id="progress-bar" class="absolute top-0 left-0 h-full bar-glow rounded-full" style="width: 0%; transition: width 3.2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+        </div>
+
+        <!-- 系統日誌訊息區塊 -->
+        <div class="w-full sm:w-3/4 md:w-2/3 text-left space-y-2 text-sm sm:text-base md:text-lg pl-4 md:pl-8">
+            <div id="log-1" class="log-line">&gt; LOADING MODULES... <span class="font-bold">OK</span></div>
+            <div id="log-2" class="log-line">&gt; CHECKING SECURITY... <span class="font-bold">OK</span></div>
+            <div id="log-3" class="log-line">&gt; ESTABLISHING LINK... <span class="font-bold">SUCCESS</span></div>
+            
+            <!-- 轉址提示訊息 (額外加入讓使用者知道即將發生什麼事) -->
+            <div id="log-4" class="log-line mt-6 text-green-300 text-glow animate-pulse">
+                &gt; REROUTING TO NEW CYIT CLASSROOM...
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 目標轉址網址
+        const TARGET_URL = "https://cyclassroom.github.io/myweb/";
+
+        window.onload = () => {
+            const progressBar = document.getElementById('progress-bar');
+            const mainText = document.getElementById('main-text');
+            const logs = [
+                document.getElementById('log-1'),
+                document.getElementById('log-2'),
+                document.getElementById('log-3'),
+                document.getElementById('log-4')
+            ];
+
+            // 1. 啟動進度條動畫
+            setTimeout(() => {
+                progressBar.style.width = '100%';
+            }, 100);
+
+            // 2. 依序顯示系統訊息
+            setTimeout(() => { logs[0].classList.add('show'); }, 800);  // 模組載入完成
+            setTimeout(() => { logs[1].classList.add('show'); }, 1800); // 安全檢查完成
+            
+            // 3. 連線建立成功，更改主標題
+            setTimeout(() => { 
+                logs[2].classList.add('show'); 
+                mainText.innerHTML = "LINK ESTABLISHED";
+            }, 2800); 
+
+            // 4. 顯示轉址提示
+            setTimeout(() => { logs[3].classList.add('show'); }, 3500);
+
+            // 5. 執行實際轉址動作 (總共耗時約 4.5 秒)
+            setTimeout(() => {
+                window.location.href = TARGET_URL;
+            }, 4500);
+        };
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CYIT Classroom 國中資訊科技教學</title>
     
     <!-- ★★★ 網站小圖示 (Favicon) ★★★ -->
